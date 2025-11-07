@@ -4,12 +4,12 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname))); // ✅ Sirve archivos estáticos
+app.use(express.static(path.join(__dirname))); // ✅ Sirve archivos estáticos desde la raíz
 
 // ✅ RUTA PRINCIPAL - Sirve tu index.html
 app.get('/', (req, res) => {
@@ -49,11 +49,41 @@ app.get('/api/health', (req, res) => {
         success: true,
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
-        version: '1.0.0'
+        version: '1.0.0',
+        status: 'operational'
+    });
+});
+
+// ✅ MANEJO DE ERRORES PARA RUTAS NO ENCONTRADAS
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'Ruta no encontrada',
+        path: req.originalUrl,
+        method: req.method,
+        timestamp: new Date().toISOString(),
+        availableRoutes: [
+            'GET / - Formulario de afiliación',
+            'POST /api/formulario/solicitud - Enviar formulario',
+            'GET /api/health - Health check'
+        ]
     });
 });
 
 app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: http://localhost:${PORT}`);
+    console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Manejo graceful de shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 Recibido SIGTERM. Cerrando servidor gracefully...');
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    console.log('🛑 Recibido SIGINT. Cerrando servidor...');
+    process.exit(0);
 });
