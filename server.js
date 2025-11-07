@@ -1096,7 +1096,24 @@ app.use('*', (req, res) => {
         ]
     });
 });
-
+app.get('/api/ver-datos', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        res.json({
+            success: true,
+            total_afiliados: result.rows.length,
+            datos: result.rows
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al obtener datos:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al consultar la base de datos'
+        });
+    }
+});
 app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: https://salud-total-n5rl.onrender.com`);
@@ -1112,3 +1129,4 @@ process.on('SIGTERM', () => {
 // ==============================================
 // 🚀 MANTÉN TU app.listen AL FINAL
 // ==============================================
+
