@@ -7,16 +7,44 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+// ==============================================
+// 🗄️ CONFIGURACIÓN DE BASE DE DATOS
+// ==============================================
 
-// ✅ CONFIGURACIÓN DE POSTGRESQL
 const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
+
+// ✅ FUNCIÓN PARA CREAR LA TABLA SI NO EXISTE
+async function createTableIfNotExists() {
+    try {
+        console.log('🔍 Verificando si existe la tabla affiliates...');
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS affiliates (
+                id SERIAL PRIMARY KEY,
+                affiliate_id VARCHAR(50) UNIQUE NOT NULL,
+                nombre VARCHAR(100) NOT NULL,
+                apellido VARCHAR(100) NOT NULL,
+                edad INTEGER NOT NULL,
+                tipo_documento VARCHAR(10) NOT NULL,
+                numero_documento VARCHAR(20) UNIQUE NOT NULL,
+                fecha_nacimiento DATE NOT NULL,
+                lugar_nacimiento VARCHAR(200) NOT NULL,
+                correo VARCHAR(150) UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('✅ Tabla affiliates lista para usar');
+    } catch (error) {
+        console.error('❌ Error al crear la tabla:', error);
+    }
+}
+
+// ==============================================
+// 🎨 CONFIGURACIÓN DEL FRONTEND
+// ==============================================
 
 // ✅ FUNCIÓN PARA CREAR TU FRONTEND IDÉNTICO
 function ensureFrontendExists() {
@@ -73,7 +101,6 @@ function ensureFrontendExists() {
             overflow-x: hidden;
         }
 
-        /* Animación de ondas en el fondo */
         .wave-background {
             position: fixed;
             top: 0;
@@ -154,7 +181,6 @@ function ensureFrontendExists() {
             }
         }
 
-        /* Sección Informativa */
         .info-section {
             background: linear-gradient(135deg, var(--salud-total-blue) 0%, #003366 100%);
             padding: 50px 40px;
@@ -376,7 +402,6 @@ function ensureFrontendExists() {
             color: #00A859;
         }
 
-        /* Sección del Formulario */
         .form-section {
             padding: 50px 40px;
             display: flex;
@@ -661,7 +686,6 @@ function ensureFrontendExists() {
             text-decoration: underline;
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
@@ -711,7 +735,6 @@ function ensureFrontendExists() {
     </style>
 </head>
 <body>
-    <!-- Animación de ondas en el fondo -->
     <div class="wave-background">
         <div class="wave"></div>
         <div class="wave"></div>
@@ -719,7 +742,6 @@ function ensureFrontendExists() {
     </div>
 
     <div class="container">
-        <!-- Sección Informativa -->
         <div class="info-section">
             <div class="info-header">
                 <div class="official-badge">
@@ -784,7 +806,6 @@ function ensureFrontendExists() {
             </div>
         </div>
 
-        <!-- Sección del Formulario -->
         <div class="form-section">
             <div class="form-header">
                 <div class="form-logo">
@@ -886,35 +907,25 @@ function ensureFrontendExists() {
     </div>
 
     <script>
-        // 🎯 CONFIGURACIÓN ACTUALIZADA DE LA API
         const API_URL = '/api/formulario/solicitud';
 
-        // 📋 VALIDACIONES DEL FORMULARIO
         function validateForm(formData) {
             const errors = [];
-
-            // Validar edad
             if (formData.edad < 0 || formData.edad > 120) {
                 errors.push('La edad debe estar entre 0 y 120 años');
             }
-
-            // Validar fecha de nacimiento
             const birthDate = new Date(formData.fecha_nacimiento);
             const today = new Date();
             if (birthDate >= today) {
                 errors.push('La fecha de nacimiento debe ser anterior a la fecha actual');
             }
-
-            // Validar email
             const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
             if (!emailRegex.test(formData.correo)) {
                 errors.push('El formato del correo electrónico no es válido');
             }
-
             return errors;
         }
 
-        // 🚀 MANEJADOR DEL ENVÍO DEL FORMULARIO
         document.getElementById('affiliate-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -922,7 +933,6 @@ function ensureFrontendExists() {
             const messageBox = document.getElementById('message-box');
             const originalText = submitBtn.innerHTML;
             
-            // Obtener datos del formulario
             const formData = {
                 nombre: document.getElementById('nombre').value.trim(),
                 apellido: document.getElementById('apellido').value.trim(),
@@ -934,77 +944,58 @@ function ensureFrontendExists() {
                 correo: document.getElementById('correo').value.trim().toLowerCase()
             };
 
-            // Validar datos
             const validationErrors = validateForm(formData);
             if (validationErrors.length > 0) {
                 showMessage('❌ ' + validationErrors.join('<br>'), 'error');
                 return;
             }
 
-            // Efecto de loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO SOLICITUD...';
             showMessage('⏳ Enviando solicitud de afiliación...', 'loading');
 
             try {
-                console.log('📤 Enviando datos al servidor:', formData);
-
-                // Enviar datos al backend
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(formData)
                 });
 
                 const result = await response.json();
-                console.log('📥 Respuesta del servidor:', result);
 
                 if (!response.ok) {
                     throw new Error(result.message || \`Error \${response.status}: \${response.statusText}\`);
                 }
 
                 if (result.success) {
-                    // Mostrar mensaje de éxito
                     showMessage('✅ ' + result.message + '<br>ID de afiliado: ' + result.affiliateId, 'success');
-                    
-                    // Limpiar formulario después de éxito
                     setTimeout(() => {
                         document.getElementById('affiliate-form').reset();
                         messageBox.style.display = 'none';
                     }, 8000);
-
                 } else {
                     throw new Error(result.message || 'Error al procesar la solicitud');
                 }
 
             } catch (error) {
-                console.error('❌ Error en la solicitud:', error);
-                
                 let errorMessage = error.message;
                 if (error.message.includes('Failed to fetch')) {
                     errorMessage = 'Error de conexión con el servidor. Por favor, intenta nuevamente.';
                 } else if (error.message.includes('NetworkError')) {
                     errorMessage = 'Error de red. Verifica tu conexión a internet.';
                 }
-                
                 showMessage('❌ ' + errorMessage, 'error');
             } finally {
-                // Restaurar botón
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             }
         });
 
-        // 💬 FUNCIÓN PARA MOSTRAR MENSAJES
         function showMessage(text, type) {
             const messageBox = document.getElementById('message-box');
             messageBox.innerHTML = text;
             messageBox.className = \`message-box \${type}\`;
             messageBox.style.display = 'block';
-            
-            // Auto-ocultar mensajes de éxito después de 8 segundos
             if (type === 'success') {
                 setTimeout(() => {
                     messageBox.style.display = 'none';
@@ -1012,7 +1003,6 @@ function ensureFrontendExists() {
             }
         }
 
-        // 🎛️ VALIDACIONES EN TIEMPO REAL
         document.getElementById('edad').addEventListener('input', function() {
             if (this.value < 0) this.value = 0;
             if (this.value > 120) this.value = 120;
@@ -1022,14 +1012,10 @@ function ensureFrontendExists() {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // Establecer fecha máxima para fecha de nacimiento (hoy)
         document.getElementById('fecha_nacimiento').max = new Date().toISOString().split('T')[0];
 
-        // 🎉 INICIALIZACIÓN
         console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
         console.log('🔗 API Configurada:', API_URL);
-        console.log('📱 Frontend listo y conectado con el backend');
-        console.log('🌐 URL Actual:', window.location.origin);
     </script>
 </body>
 </html>`;
@@ -1040,8 +1026,17 @@ function ensureFrontendExists() {
     }
 }
 
-// ✅ SERVIR ARCHIVOS ESTÁTICOS
+// ==============================================
+// ⚙️ MIDDLEWARES
+// ==============================================
+
+app.use(cors());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'front')));
+
+// ==============================================
+// 🚀 RUTAS DE LA APLICACIÓN
+// ==============================================
 
 // ✅ RUTA PRINCIPAL
 app.get('/', (req, res) => {
@@ -1052,6 +1047,9 @@ app.get('/', (req, res) => {
 // ✅ RUTA PARA PROCESAR EL FORMULARIO
 app.post('/api/formulario/solicitud', async (req, res) => {
     try {
+        // ✅ CREAR TABLA SI NO EXISTE
+        await createTableIfNotExists();
+        
         const formData = req.body;
         
         console.log('📝 Datos recibidos del formulario:', formData);
@@ -1059,8 +1057,8 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         // ✅ GUARDAR EN POSTGRESQL
         const result = await pool.query(
             `INSERT INTO affiliates 
-            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, affiliate_id, created_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, affiliate_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *`,
             [
                 formData.nombre,
@@ -1071,8 +1069,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
                 formData.fecha_nacimiento,
                 formData.lugar_nacimiento,
                 formData.correo,
-                'ST-' + Date.now(),
-                new Date()
+                'ST-' + Date.now()
             ]
         );
 
@@ -1088,6 +1085,23 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Error al guardar en PostgreSQL:', error);
+        
+        // Manejar error de duplicado
+        if (error.code === '23505') {
+            if (error.constraint === 'affiliates_correo_key') {
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Este correo electrónico ya está registrado'
+                });
+            }
+            if (error.constraint === 'affiliates_numero_documento_key') {
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Este número de documento ya está registrado'
+                });
+            }
+        }
+        
         res.status(500).json({
             success: false,
             message: 'Error al guardar en la base de datos: ' + error.message
@@ -1102,17 +1116,16 @@ app.get('/api/health', (req, res) => {
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        status: 'operational',
-        frontend: 'Auto-generado desde server.js'
+        status: 'operational'
     });
 });
 
-// ==============================================
-// 📊 RUTA PARA VER DATOS EN TABLA (NUEVA)
-// ==============================================
-
+// ✅ RUTA PARA VER DATOS EN TABLA
 app.get('/admin/afiliados', async (req, res) => {
     try {
+        // ✅ CREAR TABLA SI NO EXISTE
+        await createTableIfNotExists();
+        
         const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
         
         let html = `
@@ -1294,6 +1307,10 @@ app.get('/admin/afiliados', async (req, res) => {
                         <i class="fas fa-database"></i>
                         <h2>No hay afiliados registrados</h2>
                         <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
+                        <p style="margin-top: 20px; font-size: 0.9rem; color: #0055A4;">
+                            <i class="fas fa-info-circle"></i>
+                            ¡La tabla está lista! Puedes registrar afiliados desde el formulario principal.
+                        </p>
                     </div>`;
         } else {
             html += `
@@ -1316,7 +1333,7 @@ app.get('/admin/afiliados', async (req, res) => {
             result.rows.forEach(afiliado => {
                 html += `
                             <tr>
-                                <td><strong>${afiliado.affiliate_id || afiliado.id}</strong></td>
+                                <td><strong>${afiliado.affiliate_id}</strong></td>
                                 <td>${afiliado.nombre} ${afiliado.apellido}</td>
                                 <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
                                 <td>${afiliado.correo}</td>
@@ -1347,7 +1364,10 @@ app.get('/admin/afiliados', async (req, res) => {
     }
 });
 
-// ✅ MANEJO DE ERRORES
+// ==============================================
+// 🛡️ MANEJO DE ERRORES
+// ==============================================
+
 app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
@@ -1364,11 +1384,16 @@ app.use('*', (req, res) => {
     });
 });
 
+// ==============================================
+// 🚀 INICIO DEL SERVIDOR
+// ==============================================
+
 app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: https://salud-total-n5rl.onrender.com`);
     console.log(`🔍 Health Check: https://salud-total-n5rl.onrender.com/api/health`);
     console.log(`📊 Panel Admin: https://salud-total-n5rl.onrender.com/admin/afiliados`);
+    console.log(`🗄️  Base de datos: ${process.env.DATABASE_URL ? 'Conectada' : 'No configurada'}`);
     ensureFrontendExists();
 });
 
@@ -1378,3 +1403,7 @@ process.on('SIGTERM', () => {
     process.exit(0);
 });
 
+process.on('SIGINT', () => {
+    console.log('🛑 Recibido SIGINT. Cerrando servidor...');
+    process.exit(0);
+});
