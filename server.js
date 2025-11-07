@@ -11,6 +11,13 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 app.use(express.json());
 
+// ✅ CONFIGURACIÓN DE POSTGRESQL
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
 // ✅ FUNCIÓN PARA CREAR TU FRONTEND IDÉNTICO
 function ensureFrontendExists() {
     const frontDir = path.join(__dirname, 'front');
@@ -1043,28 +1050,47 @@ app.get('/', (req, res) => {
 });
 
 // ✅ RUTA PARA PROCESAR EL FORMULARIO
-app.post('/api/formulario/solicitud', (req, res) => {
+app.post('/api/formulario/solicitud', async (req, res) => {
     try {
         const formData = req.body;
         
         console.log('📝 Datos recibidos del formulario:', formData);
         
-        // Aquí va tu lógica para guardar en PostgreSQL
-        // Por ahora simulamos éxito
+        // ✅ GUARDAR EN POSTGRESQL
+        const result = await pool.query(
+            `INSERT INTO affiliates 
+            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, affiliate_id, created_at) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            RETURNING *`,
+            [
+                formData.nombre,
+                formData.apellido,
+                formData.edad,
+                formData.tipo_documento,
+                formData.numero_documento,
+                formData.fecha_nacimiento,
+                formData.lugar_nacimiento,
+                formData.correo,
+                'ST-' + Date.now(),
+                new Date()
+            ]
+        );
+
+        console.log('✅ Datos guardados en PostgreSQL:', result.rows[0]);
         
         res.json({
             success: true,
             message: '✅ Afiliación registrada exitosamente en Salud Total EPS',
-            data: formData,
-            affiliateId: 'ST-' + Date.now(),
+            data: result.rows[0],
+            affiliateId: result.rows[0].affiliate_id,
             timestamp: new Date().toISOString()
         });
         
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('❌ Error al guardar en PostgreSQL:', error);
         res.status(500).json({
             success: false,
-            message: 'Error interno del servidor'
+            message: 'Error al guardar en la base de datos: ' + error.message
         });
     }
 });
@@ -1081,6 +1107,246 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// ==============================================
+// 📊 RUTA PARA VER DATOS EN TABLA (NUEVA)
+// ==============================================
+
+app.get('/admin/afiliados', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        let html = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Afiliados - Salud Total EPS</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                }
+                
+                body {
+                    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+                    min-height: 100vh;
+                    padding: 20px;
+                }
+                
+                .admin-container {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0, 85, 164, 0.1);
+                    overflow: hidden;
+                }
+                
+                .admin-header {
+                    background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
+                    color: white;
+                    padding: 30px;
+                    text-align: center;
+                }
+                
+                .admin-header h1 {
+                    font-size: 2.5rem;
+                    margin-bottom: 10px;
+                }
+                
+                .admin-header p {
+                    opacity: 0.9;
+                    font-size: 1.1rem;
+                }
+                
+                .stats-container {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                    padding: 30px;
+                    background: #f8f9fa;
+                }
+                
+                .stat-card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 10px;
+                    text-align: center;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    border-left: 4px solid #0055A4;
+                }
+                
+                .stat-number {
+                    font-size: 2.5rem;
+                    font-weight: bold;
+                    color: #0055A4;
+                    margin-bottom: 5px;
+                }
+                
+                .stat-label {
+                    color: #666;
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+                
+                .data-table {
+                    padding: 0 30px 30px;
+                    overflow-x: auto;
+                }
+                
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    background: white;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    min-width: 1000px;
+                }
+                
+                th {
+                    background: #0055A4;
+                    color: white;
+                    padding: 15px;
+                    text-align: left;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                }
+                
+                td {
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #e5e7eb;
+                    font-size: 0.85rem;
+                }
+                
+                tr:hover {
+                    background: #f0f7ff;
+                }
+                
+                .badge {
+                    background: #00A859;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                }
+                
+                .empty-state {
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: #666;
+                }
+                
+                .empty-state i {
+                    font-size: 3rem;
+                    margin-bottom: 20px;
+                    color: #0055A4;
+                }
+                
+                @media (max-width: 768px) {
+                    .stats-container {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .data-table {
+                        padding: 0 15px 20px;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="admin-container">
+                <div class="admin-header">
+                    <h1>🏥 Salud Total EPS</h1>
+                    <p>Panel de Administración - Sistema de Afiliaciones</p>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">${result.rows.length}</div>
+                        <div class="stat-label">Total Afiliados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${new Date().getFullYear()}</div>
+                        <div class="stat-label">Año Actual</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${new Date().toLocaleDateString('es-CO')}</div>
+                        <div class="stat-label">Fecha Actual</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Sistema Activo</div>
+                    </div>
+                </div>
+                
+                <div class="data-table">`;
+        
+        if (result.rows.length === 0) {
+            html += `
+                    <div class="empty-state">
+                        <i class="fas fa-database"></i>
+                        <h2>No hay afiliados registrados</h2>
+                        <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
+                    </div>`;
+        } else {
+            html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Afiliado</th>
+                                <th>Nombre Completo</th>
+                                <th>Documento</th>
+                                <th>Email</th>
+                                <th>Edad</th>
+                                <th>Lugar Nacimiento</th>
+                                <th>Fecha Nacimiento</th>
+                                <th>Fecha Registro</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+            
+            result.rows.forEach(afiliado => {
+                html += `
+                            <tr>
+                                <td><strong>${afiliado.affiliate_id || afiliado.id}</strong></td>
+                                <td>${afiliado.nombre} ${afiliado.apellido}</td>
+                                <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
+                                <td>${afiliado.correo}</td>
+                                <td>${afiliado.edad} años</td>
+                                <td>${afiliado.lugar_nacimiento}</td>
+                                <td>${new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO')}</td>
+                                <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
+                                <td><span class="badge">Activo</span></td>
+                            </tr>`;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>`;
+        }
+        
+        html += `
+                </div>
+            </div>
+        </body>
+        </html>`;
+        
+        res.send(html);
+        
+    } catch (error) {
+        console.error('❌ Error en panel admin:', error);
+        res.status(500).send('Error al cargar los datos: ' + error.message);
+    }
+});
+
 // ✅ MANEJO DE ERRORES
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -1092,32 +1358,17 @@ app.use('*', (req, res) => {
         availableRoutes: [
             'GET / - Formulario de afiliación',
             'POST /api/formulario/solicitud - Enviar formulario',
-            'GET /api/health - Health check'
+            'GET /api/health - Health check',
+            'GET /admin/afiliados - Ver afiliados en tabla'
         ]
     });
 });
-app.get('/api/ver-datos', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
-        
-        res.json({
-            success: true,
-            total_afiliados: result.rows.length,
-            datos: result.rows
-        });
-        
-    } catch (error) {
-        console.error('❌ Error al obtener datos:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al consultar la base de datos'
-        });
-    }
-});
+
 app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: https://salud-total-n5rl.onrender.com`);
     console.log(`🔍 Health Check: https://salud-total-n5rl.onrender.com/api/health`);
+    console.log(`📊 Panel Admin: https://salud-total-n5rl.onrender.com/admin/afiliados`);
     ensureFrontendExists();
 });
 
@@ -1126,7 +1377,4 @@ process.on('SIGTERM', () => {
     console.log('🛑 Recibido SIGTERM. Cerrando servidor gracefully...');
     process.exit(0);
 });
-// ==============================================
-// 🚀 MANTÉN TU app.listen AL FINAL
-// ==============================================
 
