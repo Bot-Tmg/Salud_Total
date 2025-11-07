@@ -9,11 +9,13 @@ const PORT = process.env.PORT || 10000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname))); // ✅ Sirve archivos estáticos desde la raíz
 
-// ✅ RUTA PRINCIPAL - Sirve tu index.html
+// ✅ SERVIR ARCHIVOS ESTÁTICOS desde la carpeta 'front'
+app.use(express.static(path.join(__dirname, 'front')));
+
+// ✅ RUTA PRINCIPAL - Sirve index.html desde la carpeta front
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'front', 'index.html'));
 });
 
 // ✅ RUTA PARA PROCESAR EL FORMULARIO
@@ -50,7 +52,8 @@ app.get('/api/health', (req, res) => {
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        status: 'operational'
+        status: 'operational',
+        frontend: 'Carpeta front/'
     });
 });
 
@@ -74,16 +77,11 @@ app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: http://localhost:${PORT}`);
     console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
-    console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📁 Sirviendo desde: ${path.join(__dirname, 'front')}`);
 });
 
 // Manejo graceful de shutdown
 process.on('SIGTERM', () => {
     console.log('🛑 Recibido SIGTERM. Cerrando servidor gracefully...');
-    process.exit(0);
-});
-
-process.on('SIGINT', () => {
-    console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
