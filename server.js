@@ -1109,6 +1109,170 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
+// ✅ RUTA PARA ACTUALIZAR UN AFILIADO
+app.put('/api/afiliados/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const formData = req.body;
+        
+        console.log(`📝 Actualizando afiliado ID: ${id}`, formData);
+        
+        const result = await pool.query(
+            `UPDATE affiliates 
+             SET nombre = $1, apellido = $2, edad = $3, tipo_documento = $4, 
+                 numero_documento = $5, fecha_nacimiento = $6, lugar_nacimiento = $7, correo = $8
+             WHERE affiliate_id = $9 
+             RETURNING *`,
+            [
+                formData.nombre,
+                formData.apellido,
+                formData.edad,
+                formData.tipo_documento,
+                formData.numero_documento,
+                formData.fecha_nacimiento,
+                formData.lugar_nacimiento,
+                formData.correo,
+                id
+            ]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Afiliado no encontrado'
+            });
+        }
+
+        console.log('✅ Afiliado actualizado:', result.rows[0]);
+        
+        res.json({
+            success: true,
+            message: '✅ Afiliado actualizado exitosamente',
+            data: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al actualizar afiliado:', error);
+        
+        if (error.code === '23505') {
+            if (error.constraint === 'affiliates_correo_key') {
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Este correo electrónico ya está registrado por otro afiliado'
+                });
+            }
+            if (error.constraint === 'affiliates_numero_documento_key') {
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Este número de documento ya está registrado por otro afiliado'
+                });
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar afiliado: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA ELIMINAR UN AFILIADO
+app.delete('/api/afiliados/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log(`🗑️ Eliminando afiliado ID: ${id}`);
+        
+        const result = await pool.query(
+            'DELETE FROM affiliates WHERE affiliate_id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Afiliado no encontrado'
+            });
+        }
+
+        console.log('✅ Afiliado eliminado:', result.rows[0]);
+        
+        res.json({
+            success: true,
+            message: '✅ Afiliado eliminado exitosamente',
+            data: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al eliminar afiliado:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar afiliado: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL
+app.get('/admin/descargar-excel', async (req, res) => {
+    try {
+        // ✅ CREAR TABLA SI NO EXISTE
+        await createTableIfNotExists();
+        
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No hay datos para exportar'
+            });
+        }
+
+        // Importar la librería XLSX
+        const XLSX = require('xlsx');
+
+        // Preparar datos para Excel
+        const excelData = result.rows.map(afiliado => ({
+            'ID Afiliado': afiliado.affiliate_id,
+            'Nombre': afiliado.nombre,
+            'Apellido': afiliado.apellido,
+            'Edad': afiliado.edad,
+            'Tipo Documento': afiliado.tipo_documento,
+            'Número Documento': afiliado.numero_documento,
+            'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
+            'Lugar Nacimiento': afiliado.lugar_nacimiento,
+            'Correo Electrónico': afiliado.correo,
+            'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
+            'Estado': 'Activo'
+        }));
+
+        // Crear libro de trabajo y hoja
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+
+        // Agregar hoja al libro
+        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
+
+        // Configurar headers para descarga
+        const fileName = `afiliados_salud_total_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        // Escribir archivo y enviar
+        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.send(buffer);
+
+        console.log(`✅ Archivo Excel descargado: ${fileName} con ${result.rows.length} registros`);
+
+    } catch (error) {
+        console.error('❌ Error al generar Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al generar archivo Excel: ' + error.message
+        });
+    }
+});
+
 // ✅ HEALTH CHECK
 app.get('/api/health', (req, res) => {
     res.json({
@@ -1191,6 +1355,19 @@ app.get('/admin/afiliados', async (req, res) => {
                     text-align: center;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
                     border-left: 4px solid #0055A4;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    cursor: pointer;
+                }
+                
+                .stat-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                }
+                
+                .stat-card.excel {
+                    background: linear-gradient(135deg, #00A859, #008046);
+                    color: white;
+                    border-left: 4px solid #00A859;
                 }
                 
                 .stat-number {
@@ -1200,11 +1377,19 @@ app.get('/admin/afiliados', async (req, res) => {
                     margin-bottom: 5px;
                 }
                 
+                .stat-card.excel .stat-number {
+                    color: white;
+                }
+                
                 .stat-label {
                     color: #666;
                     font-size: 0.9rem;
                     text-transform: uppercase;
                     letter-spacing: 1px;
+                }
+                
+                .stat-card.excel .stat-label {
+                    color: rgba(255, 255, 255, 0.9);
                 }
                 
                 .data-table {
@@ -1219,7 +1404,7 @@ app.get('/admin/afiliados', async (req, res) => {
                     border-radius: 10px;
                     overflow: hidden;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                    min-width: 1000px;
+                    min-width: 1200px;
                 }
                 
                 th {
@@ -1250,6 +1435,44 @@ app.get('/admin/afiliados', async (req, res) => {
                     font-weight: 600;
                 }
                 
+                .action-buttons {
+                    display: flex;
+                    gap: 8px;
+                }
+                
+                .btn {
+                    padding: 6px 12px;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+                
+                .btn-edit {
+                    background: #FBBF24;
+                    color: #92400E;
+                }
+                
+                .btn-edit:hover {
+                    background: #F59E0B;
+                    transform: translateY(-2px);
+                }
+                
+                .btn-delete {
+                    background: #EF4444;
+                    color: white;
+                }
+                
+                .btn-delete:hover {
+                    background: #DC2626;
+                    transform: translateY(-2px);
+                }
+                
                 .empty-state {
                     text-align: center;
                     padding: 60px 20px;
@@ -1262,6 +1485,195 @@ app.get('/admin/afiliados', async (req, res) => {
                     color: #0055A4;
                 }
                 
+                .download-section {
+                    text-align: center;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-top: 1px solid #e5e7eb;
+                }
+                
+                .download-btn {
+                    background: linear-gradient(135deg, #00A859, #008046);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    text-decoration: none;
+                }
+                
+                .download-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(0, 168, 89, 0.3);
+                }
+                
+                .download-info {
+                    margin-top: 10px;
+                    color: #666;
+                    font-size: 0.9rem;
+                }
+                
+                /* Modal Styles */
+                .modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1000;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    animation: fadeIn 0.3s ease;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                .modal-content {
+                    background-color: white;
+                    margin: 5% auto;
+                    padding: 30px;
+                    border-radius: 15px;
+                    width: 90%;
+                    max-width: 600px;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                    animation: slideIn 0.3s ease;
+                }
+                
+                @keyframes slideIn {
+                    from { transform: translateY(-50px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                
+                .modal-header {
+                    display: flex;
+                    justify-content: between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+                
+                .modal-title {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: #0055A4;
+                }
+                
+                .close {
+                    color: #aaa;
+                    font-size: 28px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    background: none;
+                    border: none;
+                }
+                
+                .close:hover {
+                    color: #000;
+                }
+                
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 15px;
+                    margin-bottom: 20px;
+                }
+                
+                .form-group {
+                    margin-bottom: 15px;
+                }
+                
+                .form-group.full-width {
+                    grid-column: 1 / -1;
+                }
+                
+                .form-label {
+                    display: block;
+                    margin-bottom: 5px;
+                    font-weight: 600;
+                    color: #374151;
+                    font-size: 0.9rem;
+                }
+                
+                .form-input {
+                    width: 100%;
+                    padding: 10px;
+                    border: 2px solid #E5E7EB;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    transition: border-color 0.3s ease;
+                }
+                
+                .form-input:focus {
+                    outline: none;
+                    border-color: #0055A4;
+                }
+                
+                .modal-actions {
+                    display: flex;
+                    gap: 10px;
+                    justify-content: flex-end;
+                    margin-top: 20px;
+                }
+                
+                .btn-cancel {
+                    background: #6B7280;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                }
+                
+                .btn-cancel:hover {
+                    background: #4B5563;
+                }
+                
+                .btn-save {
+                    background: #0055A4;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                }
+                
+                .btn-save:hover {
+                    background: #003366;
+                }
+                
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 600;
+                    z-index: 1001;
+                    animation: slideInRight 0.3s ease;
+                }
+                
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                .notification.success {
+                    background: #00A859;
+                }
+                
+                .notification.error {
+                    background: #EF4444;
+                }
+                
                 @media (max-width: 768px) {
                     .stats-container {
                         grid-template-columns: 1fr;
@@ -1270,10 +1682,82 @@ app.get('/admin/afiliados', async (req, res) => {
                     .data-table {
                         padding: 0 15px 20px;
                     }
+                    
+                    .download-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    
+                    .form-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .modal-content {
+                        width: 95%;
+                        margin: 10% auto;
+                        padding: 20px;
+                    }
                 }
             </style>
         </head>
         <body>
+            <div id="notification" class="notification" style="display: none;"></div>
+            
+            <div id="editModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Editar Afiliado</h2>
+                        <button class="close">&times;</button>
+                    </div>
+                    <form id="editForm">
+                        <input type="hidden" id="editAffiliateId">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-input" id="editNombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Apellido</label>
+                                <input type="text" class="form-input" id="editApellido" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Edad</label>
+                                <input type="number" class="form-input" id="editEdad" min="0" max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tipo Documento</label>
+                                <select class="form-input" id="editTipoDocumento" required>
+                                    <option value="CC">Cédula de Ciudadanía</option>
+                                    <option value="CE">Cédula de Extranjería</option>
+                                    <option value="TI">Tarjeta de Identidad</option>
+                                    <option value="RC">Registro Civil</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Número Documento</label>
+                                <input type="text" class="form-input" id="editNumeroDocumento" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Fecha Nacimiento</label>
+                                <input type="date" class="form-input" id="editFechaNacimiento" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Lugar Nacimiento</label>
+                                <input type="text" class="form-input" id="editLugarNacimiento" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-input" id="editCorreo" required>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn-cancel">Cancelar</button>
+                            <button type="submit" class="btn-save">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="admin-container">
                 <div class="admin-header">
                     <h1>🏥 Salud Total EPS</h1>
@@ -1293,13 +1777,11 @@ app.get('/admin/afiliados', async (req, res) => {
                         <div class="stat-number">${new Date().toLocaleDateString('es-CO')}</div>
                         <div class="stat-label">Fecha Actual</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Sistema Activo</div>
+                    <div class="stat-card excel" onclick="window.location.href='/admin/descargar-excel'">
+                        <div class="stat-number"><i class="fas fa-file-excel"></i></div>
+                        <div class="stat-label">Descargar Excel</div>
                     </div>
-                </div>
-                
-                <div class="data-table">`;
+                </div>`;
         
         if (result.rows.length === 0) {
             html += `
@@ -1314,45 +1796,219 @@ app.get('/admin/afiliados', async (req, res) => {
                     </div>`;
         } else {
             html += `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID Afiliado</th>
-                                <th>Nombre Completo</th>
-                                <th>Documento</th>
-                                <th>Email</th>
-                                <th>Edad</th>
-                                <th>Lugar Nacimiento</th>
-                                <th>Fecha Nacimiento</th>
-                                <th>Fecha Registro</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Afiliado</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Documento</th>
+                                    <th>Email</th>
+                                    <th>Edad</th>
+                                    <th>Lugar Nacimiento</th>
+                                    <th>Fecha Nacimiento</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
             
             result.rows.forEach(afiliado => {
                 html += `
-                            <tr>
-                                <td><strong>${afiliado.affiliate_id}</strong></td>
-                                <td>${afiliado.nombre} ${afiliado.apellido}</td>
-                                <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
-                                <td>${afiliado.correo}</td>
-                                <td>${afiliado.edad} años</td>
-                                <td>${afiliado.lugar_nacimiento}</td>
-                                <td>${new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO')}</td>
-                                <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
-                                <td><span class="badge">Activo</span></td>
-                            </tr>`;
+                                <tr>
+                                    <td><strong>${afiliado.affiliate_id}</strong></td>
+                                    <td>${afiliado.nombre} ${afiliado.apellido}</td>
+                                    <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
+                                    <td>${afiliado.correo}</td>
+                                    <td>${afiliado.edad} años</td>
+                                    <td>${afiliado.lugar_nacimiento}</td>
+                                    <td>${new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO')}</td>
+                                    <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
+                                    <td><span class="badge">Activo</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-edit" onclick="editAffiliate('${afiliado.affiliate_id}')">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>`;
             });
             
             html += `
-                        </tbody>
-                    </table>`;
+                            </tbody>
+                        </table>
+                    </div>`;
         }
         
         html += `
                 </div>
+                
+                <div class="download-section">
+                    <a href="/admin/descargar-excel" class="download-btn">
+                        <i class="fas fa-file-excel"></i>
+                        DESCARGAR REPORTE COMPLETO EN EXCEL
+                    </a>
+                    <div class="download-info">
+                        Descarga todos los datos de afiliados en formato Excel (.xlsx) - ${result.rows.length} registros disponibles
+                    </div>
+                </div>
             </div>
+            
+            <script>
+                // Modal functionality
+                const modal = document.getElementById('editModal');
+                const closeBtn = document.querySelector('.close');
+                const cancelBtn = document.querySelector('.btn-cancel');
+                const editForm = document.getElementById('editForm');
+                const notification = document.getElementById('notification');
+                
+                function showNotification(message, type) {
+                    notification.textContent = message;
+                    notification.className = 'notification ' + type;
+                    notification.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 4000);
+                }
+                
+                function openModal() {
+                    modal.style.display = 'block';
+                }
+                
+                function closeModal() {
+                    modal.style.display = 'none';
+                    editForm.reset();
+                }
+                
+                closeBtn.onclick = closeModal;
+                cancelBtn.onclick = closeModal;
+                
+                window.onclick = function(event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                }
+                
+                // Edit affiliate function
+                async function editAffiliate(affiliateId) {
+                    try {
+                        const response = await fetch('/api/afiliados/' + affiliateId);
+                        if (!response.ok) {
+                            throw new Error('Error al cargar datos del afiliado');
+                        }
+                        
+                        const affiliate = await response.json();
+                        
+                        // Fill form with affiliate data
+                        document.getElementById('editAffiliateId').value = affiliate.data.affiliate_id;
+                        document.getElementById('editNombre').value = affiliate.data.nombre;
+                        document.getElementById('editApellido').value = affiliate.data.apellido;
+                        document.getElementById('editEdad').value = affiliate.data.edad;
+                        document.getElementById('editTipoDocumento').value = affiliate.data.tipo_documento;
+                        document.getElementById('editNumeroDocumento').value = affiliate.data.numero_documento;
+                        document.getElementById('editFechaNacimiento').value = affiliate.data.fecha_nacimiento;
+                        document.getElementById('editLugarNacimiento').value = affiliate.data.lugar_nacimiento;
+                        document.getElementById('editCorreo').value = affiliate.data.correo;
+                        
+                        openModal();
+                    } catch (error) {
+                        showNotification('❌ ' + error.message, 'error');
+                    }
+                }
+                
+                // Delete affiliate function
+                async function deleteAffiliate(affiliateId, fullName) {
+                    if (confirm('¿Estás seguro de que deseas eliminar al afiliado: ' + fullName + '?\\n\\nEsta acción no se puede deshacer.')) {
+                        try {
+                            const response = await fetch('/api/afiliados/' + affiliateId, {
+                                method: 'DELETE'
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                showNotification('✅ ' + result.message, 'success');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            showNotification('❌ ' + error.message, 'error');
+                        }
+                    }
+                }
+                
+                // Handle form submission
+                editForm.onsubmit = async function(e) {
+                    e.preventDefault();
+                    
+                    const formData = {
+                        nombre: document.getElementById('editNombre').value,
+                        apellido: document.getElementById('editApellido').value,
+                        edad: parseInt(document.getElementById('editEdad').value),
+                        tipo_documento: document.getElementById('editTipoDocumento').value,
+                        numero_documento: document.getElementById('editNumeroDocumento').value,
+                        fecha_nacimiento: document.getElementById('editFechaNacimiento').value,
+                        lugar_nacimiento: document.getElementById('editLugarNacimiento').value,
+                        correo: document.getElementById('editCorreo').value
+                    };
+                    
+                    const affiliateId = document.getElementById('editAffiliateId').value;
+                    
+                    try {
+                        const response = await fetch('/api/afiliados/' + affiliateId, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(formData)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            showNotification('✅ ' + result.message, 'success');
+                            closeModal();
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    } catch (error) {
+                        showNotification('❌ ' + error.message, 'error');
+                    }
+                };
+                
+                // Agregar efecto de carga para el botón de Excel
+                document.querySelector('.stat-card.excel').addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+                
+                // Input validation
+                document.getElementById('editEdad').addEventListener('input', function() {
+                    if (this.value < 0) this.value = 0;
+                    if (this.value > 120) this.value = 120;
+                });
+                
+                document.getElementById('editNumeroDocumento').addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+                
+                // Set max date for birth date
+                document.getElementById('editFechaNacimiento').max = new Date().toISOString().split('T')[0];
+            </script>
         </body>
         </html>`;
         
@@ -1379,7 +2035,10 @@ app.use('*', (req, res) => {
             'GET / - Formulario de afiliación',
             'POST /api/formulario/solicitud - Enviar formulario',
             'GET /api/health - Health check',
-            'GET /admin/afiliados - Ver afiliados en tabla'
+            'GET /admin/afiliados - Ver afiliados en tabla',
+            'GET /admin/descargar-excel - Descargar Excel con datos',
+            'PUT /api/afiliados/:id - Actualizar afiliado',
+            'DELETE /api/afiliados/:id - Eliminar afiliado'
         ]
     });
 });
@@ -1390,9 +2049,10 @@ app.use('*', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
-    console.log(`📱 Formulario: https://salud-total-n5rl.onrender.com`);
-    console.log(`🔍 Health Check: https://salud-total-n5rl.onrender.com/api/health`);
-    console.log(`📊 Panel Admin: https://salud-total-n5rl.onrender.com/admin/afiliados`);
+    console.log(`📱 Formulario: http://localhost:${PORT}`);
+    console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`📊 Panel Admin: http://localhost:${PORT}/admin/afiliados`);
+    console.log(`📥 Descarga Excel: http://localhost:${PORT}/admin/descargar-excel`);
     console.log(`🗄️  Base de datos: ${process.env.DATABASE_URL ? 'Conectada' : 'No configurada'}`);
     ensureFrontendExists();
 });
