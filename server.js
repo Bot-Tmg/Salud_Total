@@ -1134,7 +1134,7 @@ function ensureFrontendExists() {
                         <input type="checkbox" class="checkbox-input" id="tratamiento_datos" name="tratamiento_datos" required>
                         <label for="tratamiento_datos" class="checkbox-label">
                             <span class="required-checkbox">*</span> 
-                            <strong>AUTORIZO OBLIGATORIAMENTE</strong> el tratamiento de mis datos personales por 
+                            <strong>AUTORIZO </strong> el tratamiento de mis datos personales por 
                             <strong>Salud Total EPS S.A.</strong> conforme a la 
                             <a href="#" id="openPrivacyPolicy">Política de Tratamiento de Datos</a> 
                             y la Ley 1581 de 2012. Entiendo que esta autorización es <strong>requisito indispensable</strong> 
@@ -2004,3 +2004,4 @@ process.on('SIGINT', () => {
     console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
+
