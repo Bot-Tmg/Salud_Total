@@ -33,6 +33,8 @@ async function createTableIfNotExists() {
                 fecha_nacimiento DATE NOT NULL,
                 lugar_nacimiento VARCHAR(200) NOT NULL,
                 correo VARCHAR(150) UNIQUE NOT NULL,
+                tratamiento_datos BOOLEAN DEFAULT FALSE,
+                notificaciones BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -562,6 +564,165 @@ function ensureFrontendExists() {
             transform: translateY(-50%) scale(1.1);
         }
 
+        /* Estilos para checkboxes de tratamiento de datos */
+        .checkbox-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 2px solid #e9ecef;
+            margin: 20px 0;
+            transition: var(--transition);
+        }
+
+        .checkbox-group:focus-within {
+            border-color: var(--salud-total-blue);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-input {
+            margin-right: 12px;
+            margin-top: 3px;
+            accent-color: var(--salud-total-blue);
+            transform: scale(1.2);
+        }
+
+        .checkbox-label {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--dark);
+        }
+
+        .checkbox-label a {
+            color: var(--salud-total-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        .required-checkbox {
+            color: #EF4444;
+            font-weight: bold;
+        }
+
+        .privacy-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .privacy-modal.active {
+            display: flex;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-30px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--salud-total-blue), var(--salud-total-green));
+            color: white;
+            padding: 25px;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            color: var(--salud-total-blue);
+            margin: 25px 0 15px 0;
+            font-size: 1.2rem;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .modal-body ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .modal-body li {
+            margin-bottom: 8px;
+        }
+
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -580,6 +741,12 @@ function ensureFrontendExists() {
             animation: buttonEntrance 0.8s ease-out 1.2s both;
             position: relative;
             overflow: hidden;
+        }
+
+        .submit-btn:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         @keyframes buttonEntrance {
@@ -604,16 +771,16 @@ function ensureFrontendExists() {
             transition: left 0.5s;
         }
 
-        .submit-btn:hover::before {
+        .submit-btn:hover:not(:disabled)::before {
             left: 100%;
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 85, 164, 0.2);
         }
 
-        .submit-btn:active {
+        .submit-btn:active:not(:disabled) {
             transform: translateY(0);
         }
 
@@ -680,6 +847,8 @@ function ensureFrontendExists() {
         .privacy-notice a {
             color: var(--salud-total-blue);
             text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
         }
 
         .privacy-notice a:hover {
@@ -713,6 +882,15 @@ function ensureFrontendExists() {
             .info-title {
                 font-size: 1.8rem;
             }
+
+            .modal-content {
+                margin: 10px;
+                max-height: 95vh;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -731,6 +909,10 @@ function ensureFrontendExists() {
             .form-title {
                 font-size: 1.4rem;
             }
+
+            .checkbox-group {
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -739,6 +921,66 @@ function ensureFrontendExists() {
         <div class="wave"></div>
         <div class="wave"></div>
         <div class="wave"></div>
+    </div>
+
+    <!-- Modal de Política de Privacidad -->
+    <div class="privacy-modal" id="privacyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-shield-alt"></i> Política de Tratamiento de Datos Personales</h2>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h3>1. Responsable del Tratamiento</h3>
+                <p><strong>Salud Total EPS S.A.</strong>, identificada con NIT 830.035.375-8, con domicilio principal en Bogotá D.C., será responsable del tratamiento de los datos personales que usted nos suministre.</p>
+
+                <h3>2. Finalidades del Tratamiento</h3>
+                <p>Sus datos personales serán utilizados para las siguientes finalidades:</p>
+                <ul>
+                    <li>Gestionar su proceso de afiliación al Sistema General de Seguridad Social en Salud</li>
+                    <li>Prestar los servicios de salud a los que tenga derecho como afiliado</li>
+                    <li>Mantener actualizada la información en nuestra base de datos</li>
+                    <li>Enviar información relevante sobre servicios de salud y novedades del plan de beneficios</li>
+                    <li>Cumplir con las obligaciones legales y regulatorias aplicables</li>
+                </ul>
+
+                <h3>3. Derechos del Titular</h3>
+                <p>De conformidad con la Ley 1581 de 2012, usted tiene derecho a:</p>
+                <ul>
+                    <li>Conocer, actualizar y rectificar sus datos personales</li>
+                    <li>Solicitar prueba de la autorización otorgada</li>
+                    <li>Ser informado sobre el uso que se ha dado a sus datos</li>
+                    <li>Presentar quejas ante la Superintendencia de Industria y Comercio</li>
+                    <li>Revocar la autorización y/o solicitar la supresión de los datos</li>
+                    <li>Acceder en forma gratuita a sus datos personales</li>
+                </ul>
+
+                <h3>4. Procedimiento para Ejercer sus Derechos</h3>
+                <p>Para ejercer sus derechos, puede contactarnos a través de:</p>
+                <ul>
+                    <li><strong>Línea de atención:</strong> 01-8000-123456</li>
+                    <li><strong>Correo electrónico:</strong> proteccion.datos@saludtotal.com</li>
+                    <li><strong>Dirección:</strong> Carrera 15 # 95-74, Bogotá D.C.</li>
+                </ul>
+
+                <h3>5. Vigencia</h3>
+                <p>La base de datos será conservada por el tiempo necesario para cumplir con las finalidades del tratamiento y las obligaciones legales aplicables.</p>
+
+                <h3>6. Transferencias y Encargados</h3>
+                <p>Sus datos podrán ser compartidos con:</p>
+                <ul>
+                    <li>Entidades del Sistema de Seguridad Social en Salud</li>
+                    <li>Proveedores de servicios de salud (IPS, clínicas, hospitales)</li>
+                    <li>Entidades de control y vigilancia (SuperSalud, Ministerio de Salud)</li>
+                </ul>
+
+                <p style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--salud-total-blue);">
+                    <strong>Nota importante:</strong> Al marcar las casillas de autorización en el formulario, usted declara haber leído, entendido y aceptado esta política de tratamiento de datos personales.
+                </p>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -888,7 +1130,29 @@ function ensureFrontendExists() {
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn">
+                <!-- Sección de Tratamiento de Datos Personales -->
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" class="checkbox-input" id="tratamiento_datos" name="tratamiento_datos" required>
+                        <label for="tratamiento_datos" class="checkbox-label">
+                            <span class="required-checkbox">*</span> Autorizo de manera expresa e informada a 
+                            <strong>Salud Total EPS S.A.</strong> para el tratamiento de mis datos personales 
+                            de acuerdo con la <a href="#" id="openPrivacyPolicy">Política de Tratamiento de Datos</a> 
+                            y la Ley 1581 de 2012. Entiendo que esta autorización es obligatoria para el proceso de afiliación.
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" class="checkbox-input" id="notificaciones" name="notificaciones">
+                        <label for="notificaciones" class="checkbox-label">
+                            Autorizo el envío de información sobre servicios de salud, novedades del plan de beneficios, 
+                            campañas de promoción y prevención, y demás comunicaciones relacionadas con mi afiliación 
+                            a través de correo electrónico y mensajes de texto.
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
                     <i class="fas fa-user-plus"></i>
                     SOLICITAR AFILIACIÓN
                 </button>
@@ -899,7 +1163,7 @@ function ensureFrontendExists() {
             <div class="form-footer">
                 <p class="privacy-notice">
                     Al enviar este formulario aceptas nuestro 
-                    <a href="#">Aviso de Privacidad</a> y autorizas el tratamiento de datos personales 
+                    <a href="#" id="openPrivacyPolicyFooter">Aviso de Privacidad</a> y autorizas el tratamiento de datos personales 
                     conforme a la Ley 1581 de 2012. Salud Total EPS S.A. - Nit: 830.035.375-8
                 </p>
             </div>
@@ -909,27 +1173,79 @@ function ensureFrontendExists() {
     <script>
         const API_URL = '/api/formulario/solicitud';
 
+        // Funciones para el modal de privacidad
+        const privacyModal = document.getElementById('privacyModal');
+        const openPrivacyPolicy = document.getElementById('openPrivacyPolicy');
+        const openPrivacyPolicyFooter = document.getElementById('openPrivacyPolicyFooter');
+        const closeModal = document.getElementById('closeModal');
+
+        function openModal() {
+            privacyModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModalFunc() {
+            privacyModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        openPrivacyPolicy.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal();
+        });
+
+        openPrivacyPolicyFooter.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal();
+        });
+
+        closeModal.addEventListener('click', closeModalFunc);
+
+        // Cerrar modal al hacer clic fuera del contenido
+        privacyModal.addEventListener('click', function(e) {
+            if (e.target === privacyModal) {
+                closeModalFunc();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && privacyModal.classList.contains('active')) {
+                closeModalFunc();
+            }
+        });
+
         function validateForm(formData) {
             const errors = [];
+            
+            // Validaciones básicas
             if (formData.edad < 0 || formData.edad > 120) {
                 errors.push('La edad debe estar entre 0 y 120 años');
             }
+            
             const birthDate = new Date(formData.fecha_nacimiento);
             const today = new Date();
             if (birthDate >= today) {
                 errors.push('La fecha de nacimiento debe ser anterior a la fecha actual');
             }
+            
             const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
             if (!emailRegex.test(formData.correo)) {
                 errors.push('El formato del correo electrónico no es válido');
             }
+            
+            // Validación de tratamiento de datos
+            if (!formData.tratamiento_datos) {
+                errors.push('Debe autorizar el tratamiento de datos personales para continuar con la afiliación');
+            }
+            
             return errors;
         }
 
         document.getElementById('affiliate-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitBtn = document.getElementById('submitBtn');
             const messageBox = document.getElementById('message-box');
             const originalText = submitBtn.innerHTML;
             
@@ -941,7 +1257,9 @@ function ensureFrontendExists() {
                 numero_documento: document.getElementById('numero_documento').value.trim(),
                 fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
                 lugar_nacimiento: document.getElementById('lugar_nacimiento').value.trim(),
-                correo: document.getElementById('correo').value.trim().toLowerCase()
+                correo: document.getElementById('correo').value.trim().toLowerCase(),
+                tratamiento_datos: document.getElementById('tratamiento_datos').checked,
+                notificaciones: document.getElementById('notificaciones').checked
             };
 
             const validationErrors = validateForm(formData);
@@ -1016,6 +1334,7 @@ function ensureFrontendExists() {
 
         console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
         console.log('🔗 API Configurada:', API_URL);
+        console.log('🛡️  Sistema de Tratamiento de Datos implementado');
     </script>
 </body>
 </html>`;
@@ -1054,11 +1373,19 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         
         console.log('📝 Datos recibidos del formulario:', formData);
         
+        // Validar que se haya autorizado el tratamiento de datos
+        if (!formData.tratamiento_datos) {
+            return res.status(400).json({
+                success: false,
+                message: '❌ Debe autorizar el tratamiento de datos personales para continuar con la afiliación'
+            });
+        }
+        
         // ✅ GUARDAR EN POSTGRESQL
         const result = await pool.query(
             `INSERT INTO affiliates 
-            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, affiliate_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, notificaciones, affiliate_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING *`,
             [
                 formData.nombre,
@@ -1069,6 +1396,8 @@ app.post('/api/formulario/solicitud', async (req, res) => {
                 formData.fecha_nacimiento,
                 formData.lugar_nacimiento,
                 formData.correo,
+                formData.tratamiento_datos,
+                formData.notificaciones || false,
                 'ST-' + Date.now()
             ]
         );
@@ -1080,6 +1409,8 @@ app.post('/api/formulario/solicitud', async (req, res) => {
             message: '✅ Afiliación registrada exitosamente en Salud Total EPS',
             data: result.rows[0],
             affiliateId: result.rows[0].affiliate_id,
+            tratamientoDatos: result.rows[0].tratamiento_datos,
+            notificaciones: result.rows[0].notificaciones,
             timestamp: new Date().toISOString()
         });
         
@@ -1109,7 +1440,100 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA ELIMINAR UN AFILIADO
+// ✅ NUEVA RUTA: EJERCICIO DE DERECHOS ARCO
+app.post('/api/derechos-arco', async (req, res) => {
+    try {
+        const { tipo_solicitud, numero_documento, correo, descripcion } = req.body;
+        
+        console.log('📋 Solicitud de derechos ARCO recibida:', { tipo_solicitud, numero_documento, correo });
+        
+        // Validar campos requeridos
+        if (!tipo_solicitud || !numero_documento || !correo) {
+            return res.status(400).json({
+                success: false,
+                message: '❌ Todos los campos marcados como obligatorios son requeridos'
+            });
+        }
+        
+        // Buscar el afiliado en la base de datos
+        const afiliadoResult = await pool.query(
+            'SELECT * FROM affiliates WHERE numero_documento = $1 AND correo = $2',
+            [numero_documento, correo]
+        );
+        
+        if (afiliadoResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ No se encontró un afiliado con el número de documento y correo electrónico proporcionados'
+            });
+        }
+        
+        const afiliado = afiliadoResult.rows[0];
+        
+        // Procesar según el tipo de solicitud
+        let mensaje = '';
+        let accionRealizada = '';
+        
+        switch (tipo_solicitud) {
+            case 'acceso':
+                mensaje = 'Solicitud de acceso a datos personales recibida correctamente. Se enviará la información al correo electrónico registrado.';
+                accionRealizada = 'Solicitud de acceso a datos';
+                break;
+                
+            case 'rectificacion':
+                mensaje = 'Solicitud de rectificación de datos recibida. Nuestro equipo se contactará para verificar la información a actualizar.';
+                accionRealizada = 'Solicitud de rectificación de datos';
+                break;
+                
+            case 'cancelacion':
+                mensaje = 'Solicitud de cancelación de datos recibida. Este proceso puede tomar hasta 10 días hábiles.';
+                accionRealizada = 'Solicitud de cancelación de datos';
+                break;
+                
+            case 'oposicion':
+                mensaje = 'Solicitud de oposición al tratamiento de datos recibida. Se suspenderá el uso de sus datos para fines promocionales.';
+                accionRealizada = 'Solicitud de oposición al tratamiento';
+                break;
+                
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Tipo de solicitud no válido'
+                });
+        }
+        
+        // Registrar la solicitud en un log (en una aplicación real, guardarías esto en una tabla)
+        console.log('📝 Solicitud ARCO registrada:', {
+            afiliado: afiliado.affiliate_id,
+            tipo: tipo_solicitud,
+            accion: accionRealizada,
+            timestamp: new Date().toISOString(),
+            descripcion: descripcion || 'Sin descripción adicional'
+        });
+        
+        res.json({
+            success: true,
+            message: `✅ ${mensaje}`,
+            datos: {
+                solicitudId: 'ARCO-' + Date.now(),
+                tipoSolicitud: tipo_solicitud,
+                afiliadoId: afiliado.affiliate_id,
+                fechaSolicitud: new Date().toISOString(),
+                estado: 'En proceso',
+                tiempoEstimado: '10 días hábiles'
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al procesar solicitud ARCO:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al procesar la solicitud: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA ELIMINAR UN AFILIADO (CANCELACIÓN DE DATOS)
 app.delete('/api/afiliados/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -1174,6 +1598,8 @@ app.get('/admin/descargar-excel', async (req, res) => {
             'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
             'Lugar Nacimiento': afiliado.lugar_nacimiento,
             'Correo Electrónico': afiliado.correo,
+            'Tratamiento Datos': afiliado.tratamiento_datos ? 'AUTORIZADO' : 'NO AUTORIZADO',
+            'Notificaciones': afiliado.notificaciones ? 'AUTORIZADO' : 'NO AUTORIZADO',
             'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
             'Estado': 'Activo'
         }));
@@ -1206,14 +1632,95 @@ app.get('/admin/descargar-excel', async (req, res) => {
     }
 });
 
+// ✅ NUEVA RUTA: POLÍTICA DE PRIVACIDAD
+app.get('/politica-privacidad', (req, res) => {
+    const politicaHTML = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Política de Privacidad - Salud Total EPS</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                background: #f5f5f5;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+            h1 {
+                color: #0055A4;
+                border-bottom: 3px solid #00A859;
+                padding-bottom: 10px;
+            }
+            h2 {
+                color: #0055A4;
+                margin-top: 30px;
+            }
+            .back-button {
+                display: inline-block;
+                background: #0055A4;
+                color: white;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <a href="/" class="back-button">← Volver al Formulario</a>
+            <h1>Política de Tratamiento de Datos Personales</h1>
+            <p><strong>Salud Total EPS S.A.</strong>, en cumplimiento de la Ley 1581 de 2012 y sus decretos reglamentarios, presenta su política de tratamiento de datos personales.</p>
+            
+            <h2>1. Responsable del Tratamiento</h2>
+            <p><strong>Salud Total EPS S.A.</strong>, identificada con NIT 830.035.375-8.</p>
+            
+            <h2>2. Finalidades del Tratamiento</h2>
+            <ul>
+                <li>Gestionar afiliaciones al SGSSS</li>
+                <li>Prestar servicios de salud</li>
+                <li>Mantener bases de datos actualizadas</li>
+                <li>Cumplir obligaciones legales</li>
+            </ul>
+            
+            <h2>3. Derechos de los Titulares</h2>
+            <p>Usted tiene derecho a conocer, actualizar, rectificar y suprimir sus datos personales.</p>
+            
+            <h2>4. Contacto</h2>
+            <p>Para ejercer sus derechos, contacte a: proteccion.datos@saludtotal.com</p>
+        </div>
+    </body>
+    </html>`;
+    
+    res.send(politicaHTML);
+});
+
 // ✅ HEALTH CHECK
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        status: 'operational'
+        version: '1.1.0',
+        status: 'operational',
+        features: {
+            tratamientoDatos: true,
+            derechosARCO: true,
+            exportExcel: true,
+            panelAdmin: true
+        }
     });
 });
 
@@ -1303,6 +1810,12 @@ app.get('/admin/afiliados', async (req, res) => {
                     border-left: 4px solid #00A859;
                 }
                 
+                .stat-card.arco {
+                    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+                    color: white;
+                    border-left: 4px solid #8B5CF6;
+                }
+                
                 .stat-number {
                     font-size: 2.5rem;
                     font-weight: bold;
@@ -1310,7 +1823,8 @@ app.get('/admin/afiliados', async (req, res) => {
                     margin-bottom: 5px;
                 }
                 
-                .stat-card.excel .stat-number {
+                .stat-card.excel .stat-number,
+                .stat-card.arco .stat-number {
                     color: white;
                 }
                 
@@ -1321,7 +1835,8 @@ app.get('/admin/afiliados', async (req, res) => {
                     letter-spacing: 1px;
                 }
                 
-                .stat-card.excel .stat-label {
+                .stat-card.excel .stat-label,
+                .stat-card.arco .stat-label {
                     color: rgba(255, 255, 255, 0.9);
                 }
                 
@@ -1360,12 +1875,20 @@ app.get('/admin/afiliados', async (req, res) => {
                 }
                 
                 .badge {
-                    background: #00A859;
-                    color: white;
                     padding: 4px 8px;
                     border-radius: 12px;
                     font-size: 0.7rem;
                     font-weight: 600;
+                }
+                
+                .badge-success {
+                    background: #D1FAE5;
+                    color: #065F46;
+                }
+                
+                .badge-warning {
+                    background: #FEF3C7;
+                    color: #92400E;
                 }
                 
                 .action-buttons {
@@ -1429,11 +1952,20 @@ app.get('/admin/afiliados', async (req, res) => {
                     align-items: center;
                     gap: 10px;
                     text-decoration: none;
+                    margin: 5px;
                 }
                 
                 .download-btn:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 8px 20px rgba(0, 168, 89, 0.3);
+                }
+                
+                .btn-arco {
+                    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+                }
+                
+                .btn-arco:hover {
+                    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
                 }
                 
                 .download-info {
@@ -1479,6 +2011,7 @@ app.get('/admin/afiliados', async (req, res) => {
                     .download-btn {
                         width: 100%;
                         justify-content: center;
+                        margin: 5px 0;
                     }
                 }
             </style>
@@ -1498,16 +2031,20 @@ app.get('/admin/afiliados', async (req, res) => {
                         <div class="stat-label">Total Afiliados</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${new Date().getFullYear()}</div>
-                        <div class="stat-label">Año Actual</div>
+                        <div class="stat-number">${result.rows.filter(a => a.tratamiento_datos).length}</div>
+                        <div class="stat-label">Tratamiento Autorizado</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${new Date().toLocaleDateString('es-CO')}</div>
-                        <div class="stat-label">Fecha Actual</div>
+                        <div class="stat-number">${result.rows.filter(a => a.notificaciones).length}</div>
+                        <div class="stat-label">Notificaciones Activas</div>
                     </div>
                     <div class="stat-card excel" onclick="window.location.href='/admin/descargar-excel'">
                         <div class="stat-number"><i class="fas fa-file-excel"></i></div>
                         <div class="stat-label">Descargar Excel</div>
+                    </div>
+                    <div class="stat-card arco" onclick="window.location.href='/admin/derechos-arco'">
+                        <div class="stat-number"><i class="fas fa-user-shield"></i></div>
+                        <div class="stat-label">Derechos ARCO</div>
                     </div>
                 </div>`;
         
@@ -1533,10 +2070,9 @@ app.get('/admin/afiliados', async (req, res) => {
                                     <th>Documento</th>
                                     <th>Email</th>
                                     <th>Edad</th>
-                                    <th>Lugar Nacimiento</th>
-                                    <th>Fecha Nacimiento</th>
+                                    <th>Tratamiento Datos</th>
+                                    <th>Notificaciones</th>
                                     <th>Fecha Registro</th>
-                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -1550,10 +2086,17 @@ app.get('/admin/afiliados', async (req, res) => {
                                     <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
                                     <td>${afiliado.correo}</td>
                                     <td>${afiliado.edad} años</td>
-                                    <td>${afiliado.lugar_nacimiento}</td>
-                                    <td>${new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO')}</td>
+                                    <td>
+                                        <span class="badge ${afiliado.tratamiento_datos ? 'badge-success' : 'badge-warning'}">
+                                            ${afiliado.tratamiento_datos ? 'AUTORIZADO' : 'PENDIENTE'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${afiliado.notificaciones ? 'badge-success' : 'badge-warning'}">
+                                            ${afiliado.notificaciones ? 'ACTIVAS' : 'INACTIVAS'}
+                                        </span>
+                                    </td>
                                     <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
-                                    <td><span class="badge">Activo</span></td>
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
@@ -1578,8 +2121,14 @@ app.get('/admin/afiliados', async (req, res) => {
                         <i class="fas fa-file-excel"></i>
                         DESCARGAR REPORTE COMPLETO EN EXCEL
                     </a>
+                    <a href="/admin/derechos-arco" class="download-btn btn-arco">
+                        <i class="fas fa-user-shield"></i>
+                        GESTIÓN DE DERECHOS ARCO
+                    </a>
                     <div class="download-info">
-                        Descarga todos los datos de afiliados en formato Excel (.xlsx) - ${result.rows.length} registros disponibles
+                        ${result.rows.length} registros disponibles | 
+                        Tratamiento de datos: ${result.rows.filter(a => a.tratamiento_datos).length} autorizados |
+                        Notificaciones: ${result.rows.filter(a => a.notificaciones).length} activas
                     </div>
                 </div>
             </div>
@@ -1620,12 +2169,14 @@ app.get('/admin/afiliados', async (req, res) => {
                     }
                 }
                 
-                // Agregar efecto de carga para el botón de Excel
-                document.querySelector('.stat-card.excel').addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
+                // Agregar efecto de carga para los botones
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                    });
                 });
             </script>
         </body>
@@ -1637,6 +2188,398 @@ app.get('/admin/afiliados', async (req, res) => {
         console.error('❌ Error en panel admin:', error);
         res.status(500).send('Error al cargar los datos: ' + error.message);
     }
+});
+
+// ✅ NUEVA RUTA: PANEL DE DERECHOS ARCO
+app.get('/admin/derechos-arco', (req, res) => {
+    const arcoHTML = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Derechos ARCO - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+            
+            .container {
+                max-width: 1000px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0, 85, 164, 0.1);
+                overflow: hidden;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+                color: white;
+                padding: 40px;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+            
+            .header p {
+                opacity: 0.9;
+                font-size: 1.1rem;
+            }
+            
+            .back-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 8px;
+                text-decoration: none;
+                margin-bottom: 20px;
+                transition: all 0.3s ease;
+            }
+            
+            .back-button:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: translateY(-2px);
+            }
+            
+            .content {
+                padding: 40px;
+            }
+            
+            .info-section {
+                background: #f8f9fa;
+                padding: 25px;
+                border-radius: 10px;
+                margin-bottom: 30px;
+                border-left: 4px solid #8B5CF6;
+            }
+            
+            .info-section h3 {
+                color: #8B5CF6;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .arco-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            
+            .arco-card {
+                background: white;
+                padding: 25px;
+                border-radius: 10px;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border-top: 4px solid #8B5CF6;
+                transition: transform 0.3s ease;
+            }
+            
+            .arco-card:hover {
+                transform: translateY(-5px);
+            }
+            
+            .arco-icon {
+                font-size: 2.5rem;
+                color: #8B5CF6;
+                margin-bottom: 15px;
+            }
+            
+            .arco-card h3 {
+                color: #333;
+                margin-bottom: 10px;
+            }
+            
+            .arco-card p {
+                color: #666;
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+            
+            .form-section {
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #333;
+            }
+            
+            .form-input, .form-select, .form-textarea {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e5e7eb;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: border-color 0.3s ease;
+            }
+            
+            .form-input:focus, .form-select:focus, .form-textarea:focus {
+                outline: none;
+                border-color: #8B5CF6;
+            }
+            
+            .form-textarea {
+                height: 100px;
+                resize: vertical;
+            }
+            
+            .submit-btn {
+                background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                width: 100%;
+            }
+            
+            .submit-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+            }
+            
+            .message-box {
+                margin-top: 20px;
+                padding: 15px;
+                border-radius: 8px;
+                text-align: center;
+                display: none;
+                font-weight: 600;
+            }
+            
+            .success {
+                background: #D1FAE5;
+                color: #065F46;
+                border: 1px solid #A7F3D0;
+            }
+            
+            .error {
+                background: #FEE2E2;
+                color: #991B1B;
+                border: 1px solid #FECACA;
+            }
+            
+            @media (max-width: 768px) {
+                .content {
+                    padding: 20px;
+                }
+                
+                .arco-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .header {
+                    padding: 30px 20px;
+                }
+                
+                .header h1 {
+                    font-size: 2rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <a href="/admin/afiliados" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al Panel
+                </a>
+                <h1><i class="fas fa-user-shield"></i> Derechos ARCO</h1>
+                <p>Ejercicio de Derechos de Acceso, Rectificación, Cancelación y Oposición</p>
+            </div>
+            
+            <div class="content">
+                <div class="info-section">
+                    <h3><i class="fas fa-info-circle"></i> ¿Qué son los derechos ARCO?</h3>
+                    <p>De acuerdo con la Ley 1581 de 2012, usted como titular de datos personales tiene derecho a:</p>
+                </div>
+                
+                <div class="arco-grid">
+                    <div class="arco-card">
+                        <div class="arco-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Acceso</h3>
+                        <p>Conocer la información personal que tenemos almacenada y cómo la estamos utilizando.</p>
+                    </div>
+                    
+                    <div class="arco-card">
+                        <div class="arco-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <h3>Rectificación</h3>
+                        <p>Solicitar la corrección o actualización de datos inexactos o incompletos.</p>
+                    </div>
+                    
+                    <div class="arco-card">
+                        <div class="arco-icon">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <h3>Cancelación</h3>
+                        <p>Solicitar la eliminación de sus datos personales de nuestras bases de datos.</p>
+                    </div>
+                    
+                    <div class="arco-card">
+                        <div class="arco-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <h3>Oposición</h3>
+                        <p>Oponerse al tratamiento de sus datos para fines específicos.</p>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2 style="color: #8B5CF6; margin-bottom: 25px; text-align: center;">Solicitud de Derechos ARCO</h2>
+                    
+                    <form id="arco-form">
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Solicitud *</label>
+                            <select class="form-select" id="tipo_solicitud" name="tipo_solicitud" required>
+                                <option value="">Seleccione el tipo de solicitud...</option>
+                                <option value="acceso">Acceso a mis datos</option>
+                                <option value="rectificacion">Rectificación de datos</option>
+                                <option value="cancelacion">Cancelación de datos</option>
+                                <option value="oposicion">Oposición al tratamiento</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Número de Documento *</label>
+                            <input type="text" class="form-input" id="numero_documento" name="numero_documento" placeholder="Ingrese su número de documento" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Correo Electrónico *</label>
+                            <input type="email" class="form-input" id="correo" name="correo" placeholder="correo@ejemplo.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Descripción de la Solicitud</label>
+                            <textarea class="form-textarea" id="descripcion" name="descripcion" placeholder="Describa detalladamente su solicitud..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            ENVIAR SOLICITUD
+                        </button>
+                    </form>
+                    
+                    <div id="message-box" class="message-box"></div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            const API_URL = '/api/derechos-arco';
+            
+            document.getElementById('arco-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('submitBtn');
+                const messageBox = document.getElementById('message-box');
+                const originalText = submitBtn.innerHTML;
+                
+                const formData = {
+                    tipo_solicitud: document.getElementById('tipo_solicitud').value,
+                    numero_documento: document.getElementById('numero_documento').value.trim(),
+                    correo: document.getElementById('correo').value.trim().toLowerCase(),
+                    descripcion: document.getElementById('descripcion').value.trim()
+                };
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO SOLICITUD...';
+                showMessage('⏳ Enviando solicitud ARCO...', 'loading');
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Error al procesar la solicitud');
+                    }
+                    
+                    if (result.success) {
+                        showMessage('✅ ' + result.message + '<br>ID de solicitud: ' + result.datos.solicitudId, 'success');
+                        setTimeout(() => {
+                            document.getElementById('arco-form').reset();
+                            messageBox.style.display = 'none';
+                        }, 8000);
+                    } else {
+                        throw new Error(result.message || 'Error al procesar la solicitud');
+                    }
+                    
+                } catch (error) {
+                    showMessage('❌ ' + error.message, 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
+            
+            function showMessage(text, type) {
+                const messageBox = document.getElementById('message-box');
+                messageBox.innerHTML = text;
+                messageBox.className = 'message-box ' + type;
+                messageBox.style.display = 'block';
+                if (type === 'success') {
+                    setTimeout(() => {
+                        messageBox.style.display = 'none';
+                    }, 8000);
+                }
+            }
+            
+            // Validar número de documento (solo números)
+            document.getElementById('numero_documento').addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        </script>
+    </body>
+    </html>`;
+    
+    res.send(arcoHTML);
 });
 
 // ==============================================
@@ -1653,9 +2596,12 @@ app.use('*', (req, res) => {
         availableRoutes: [
             'GET / - Formulario de afiliación',
             'POST /api/formulario/solicitud - Enviar formulario',
+            'POST /api/derechos-arco - Ejercer derechos ARCO',
             'GET /api/health - Health check',
             'GET /admin/afiliados - Ver afiliados en tabla',
+            'GET /admin/derechos-arco - Gestión derechos ARCO',
             'GET /admin/descargar-excel - Descargar Excel con datos',
+            'GET /politica-privacidad - Política de privacidad',
             'DELETE /api/afiliados/:id - Eliminar afiliado'
         ]
     });
@@ -1670,8 +2616,11 @@ app.listen(PORT, () => {
     console.log(`📱 Formulario: http://localhost:${PORT}`);
     console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
     console.log(`📊 Panel Admin: http://localhost:${PORT}/admin/afiliados`);
+    console.log(`🛡️  Derechos ARCO: http://localhost:${PORT}/admin/derechos-arco`);
     console.log(`📥 Descarga Excel: http://localhost:${PORT}/admin/descargar-excel`);
+    console.log(`📄 Política Privacidad: http://localhost:${PORT}/politica-privacidad`);
     console.log(`🗄️  Base de datos: ${process.env.DATABASE_URL ? 'Conectada' : 'No configurada'}`);
+    console.log(`🛡️  Sistema de Tratamiento de Datos implementado`);
     ensureFrontendExists();
 });
 
