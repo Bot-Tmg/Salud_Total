@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
@@ -17,12 +18,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// ✅ FUNCIÓN PARA CREAR LA TABLA SI NO EXISTE
-async function createTableIfNotExists() {
+// ✅ FUNCIÓN PARA CREAR LAS TABLAS SI NO EXISTEN
+async function createTablesIfNotExists() {
     try {
-        console.log('🔍 Verificando si existe la tabla affiliates...');
+        console.log('🔍 Verificando si existen las tablas...');
         
-        // Primero verificar si la tabla existe
+        // Crear tabla de affiliates
         const tableExists = await pool.query(`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables 
@@ -31,7 +32,6 @@ async function createTableIfNotExists() {
         `);
         
         if (!tableExists.rows[0].exists) {
-            // Crear tabla nueva con la columna tratamiento_datos
             await pool.query(`
                 CREATE TABLE affiliates (
                     id SERIAL PRIMARY KEY,
@@ -48,31 +48,77 @@ async function createTableIfNotExists() {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             `);
-            console.log('✅ Tabla affiliates creada con columna tratamiento_datos');
-        } else {
-            // Verificar si la columna tratamiento_datos existe
-            const columnExists = await pool.query(`
-                SELECT EXISTS (
-                    SELECT FROM information_schema.columns 
-                    WHERE table_name = 'affiliates' AND column_name = 'tratamiento_datos'
+            console.log('✅ Tabla affiliates creada');
+        }
+
+        // Crear tabla de administradores
+        const adminTableExists = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'admins'
+            );
+        `);
+        
+        if (!adminTableExists.rows[0].exists) {
+            await pool.query(`
+                CREATE TABLE admins (
+                    id SERIAL PRIMARY KEY,
+                    username VARCHAR(50) UNIQUE NOT NULL,
+                    password_hash VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             `);
+            console.log('✅ Tabla admins creada');
             
-            if (!columnExists.rows[0].exists) {
-                // Agregar la columna si no existe
-                await pool.query(`
-                    ALTER TABLE affiliates 
-                    ADD COLUMN tratamiento_datos BOOLEAN DEFAULT FALSE;
-                `);
-                console.log('✅ Columna tratamiento_datos agregada a la tabla existente');
-            } else {
-                console.log('✅ Tabla affiliates ya tiene la columna tratamiento_datos');
-            }
+            // Crear admin por defecto
+            const defaultPassword = 'admin123'; // Cambia esta contraseña
+            const hashedPassword = await bcrypt.hash(defaultPassword, 12);
+            
+            await pool.query(
+                'INSERT INTO admins (username, password_hash) VALUES ($1, $2)',
+                ['admin', hashedPassword]
+            );
+            console.log('✅ Usuario admin creado con contraseña: admin123');
+        }
+
+        // Verificar columna tratamiento_datos
+        const columnExists = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.columns 
+                WHERE table_name = 'affiliates' AND column_name = 'tratamiento_datos'
+            );
+        `);
+        
+        if (!columnExists.rows[0].exists) {
+            await pool.query(`
+                ALTER TABLE affiliates 
+                ADD COLUMN tratamiento_datos BOOLEAN DEFAULT FALSE;
+            `);
+            console.log('✅ Columna tratamiento_datos agregada');
         }
         
     } catch (error) {
-        console.error('❌ Error al verificar/crear la tabla:', error);
+        console.error('❌ Error al verificar/crear las tablas:', error);
     }
+}
+
+// ==============================================
+// 🔐 MIDDLEWARE DE AUTENTICACIÓN
+// ==============================================
+
+// Sesiones simples en memoria (en producción usar session store)
+const activeSessions = new Map();
+
+function requireAuth(req, res, next) {
+    const sessionId = req.cookies?.sessionId;
+    
+    if (sessionId && activeSessions.has(sessionId)) {
+        req.user = activeSessions.get(sessionId);
+        return next();
+    }
+    
+    // Redirigir al login si no está autenticado
+    res.redirect('/admin/login');
 }
 
 // ==============================================
@@ -1385,6 +1431,7 @@ function ensureFrontendExists() {
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'front')));
+app.use(require('cookie-parser')());
 
 // ==============================================
 // 🚀 RUTAS DE LA APLICACIÓN
@@ -1399,8 +1446,8 @@ app.get('/', (req, res) => {
 // ✅ RUTA PARA PROCESAR EL FORMULARIO
 app.post('/api/formulario/solicitud', async (req, res) => {
     try {
-        // ✅ CREAR TABLA SI NO EXISTE
-        await createTableIfNotExists();
+        // ✅ CREAR TABLAS SI NO EXISTEN
+        await createTablesIfNotExists();
         
         const formData = req.body;
         
@@ -1471,128 +1518,338 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA ELIMINAR UN AFILIADO
-app.delete('/api/afiliados/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        console.log(`🗑️ Eliminando afiliado ID: ${id}`);
-        
-        const result = await pool.query(
-            'DELETE FROM affiliates WHERE affiliate_id = $1 RETURNING *',
-            [id]
-        );
+// ==============================================
+// 🔐 RUTAS DE AUTENTICACIÓN
+// ==============================================
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
+// ✅ PÁGINA DE LOGIN
+app.get('/admin/login', (req, res) => {
+    const loginHTML = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Acceso Administrativo - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            
+            .login-container {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                padding: 40px;
+                width: 100%;
+                max-width: 400px;
+                text-align: center;
+            }
+            
+            .logo {
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #0055A4, #00A859);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+                color: white;
+                font-size: 2rem;
+            }
+            
+            h1 {
+                color: #0055A4;
+                margin-bottom: 10px;
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                color: #666;
+                margin-bottom: 30px;
+                font-size: 0.9rem;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+                text-align: left;
+            }
+            
+            label {
+                display: block;
+                margin-bottom: 8px;
+                color: #333;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+            
+            .input-container {
+                position: relative;
+            }
+            
+            .input-container i {
+                position: absolute;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #666;
+            }
+            
+            input {
+                width: 100%;
+                padding: 12px 12px 12px 45px;
+                border: 2px solid #e5e7eb;
+                border-radius: 10px;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            }
+            
+            input:focus {
+                outline: none;
+                border-color: #0055A4;
+                box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
+            }
+            
+            .login-btn {
+                width: 100%;
+                padding: 14px;
+                background: linear-gradient(135deg, #0055A4, #00A859);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-top: 10px;
+            }
+            
+            .login-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
+            }
+            
+            .login-btn:disabled {
+                background: #9CA3AF;
+                cursor: not-allowed;
+                transform: none;
+            }
+            
+            .message {
+                margin-top: 15px;
+                padding: 10px;
+                border-radius: 8px;
+                font-weight: 600;
+                display: none;
+            }
+            
+            .error {
+                background: #FEE2E2;
+                color: #991B1B;
+                border: 1px solid #FECACA;
+            }
+            
+            .back-link {
+                display: inline-block;
+                margin-top: 20px;
+                color: #0055A4;
+                text-decoration: none;
+                font-size: 0.9rem;
+            }
+            
+            .back-link:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="logo">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h1>Acceso Administrativo</h1>
+            <p class="subtitle">Sistema de Gestión - Salud Total EPS</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <div class="input-container">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <div class="input-container">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> INGRESAR
+                </button>
+            </form>
+            
+            <div id="message" class="message"></div>
+            
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i> Volver al formulario principal
+            </a>
+        </div>
+        
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const loginBtn = document.getElementById('loginBtn');
+                const message = document.getElementById('message');
+                const originalText = loginBtn.innerHTML;
+                
+                const formData = {
+                    username: document.getElementById('username').value.trim(),
+                    password: document.getElementById('password').value
+                };
+                
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFICANDO...';
+                message.style.display = 'none';
+                
+                try {
+                    const response = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Redirigir al panel de administración
+                        window.location.href = '/admin/afiliados';
+                    } else {
+                        throw new Error(result.message);
+                    }
+                    
+                } catch (error) {
+                    message.textContent = '❌ ' + error.message;
+                    message.className = 'message error';
+                    message.style.display = 'block';
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                }
+            });
+        </script>
+    </body>
+    </html>`;
+    
+    res.send(loginHTML);
+});
+
+// ✅ API DE LOGIN
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({
                 success: false,
-                message: '❌ Afiliado no encontrado'
+                message: 'Usuario y contraseña son requeridos'
             });
         }
-
-        console.log('✅ Afiliado eliminado:', result.rows[0]);
+        
+        // Buscar usuario en la base de datos
+        const result = await pool.query(
+            'SELECT * FROM admins WHERE username = $1',
+            [username]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario o contraseña incorrectos'
+            });
+        }
+        
+        const admin = result.rows[0];
+        
+        // Verificar contraseña
+        const isValidPassword = await bcrypt.compare(password, admin.password_hash);
+        
+        if (!isValidPassword) {
+            return res.status(401).json({
+                success: false,
+                message: 'Usuario o contraseña incorrectos'
+            });
+        }
+        
+        // Crear sesión
+        const sessionId = require('crypto').randomBytes(32).toString('hex');
+        activeSessions.set(sessionId, {
+            id: admin.id,
+            username: admin.username,
+            loginTime: new Date()
+        });
+        
+        // Configurar cookie de sesión
+        res.cookie('sessionId', sessionId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 24 horas
+        });
         
         res.json({
             success: true,
-            message: '✅ Afiliado eliminado exitosamente',
-            data: result.rows[0]
+            message: 'Login exitoso'
         });
         
     } catch (error) {
-        console.error('❌ Error al eliminar afiliado:', error);
+        console.error('❌ Error en login:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al eliminar afiliado: ' + error.message
+            message: 'Error interno del servidor'
         });
     }
 });
 
-// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL
-app.get('/admin/descargar-excel', async (req, res) => {
-    try {
-        // ✅ CREAR TABLA SI NO EXISTE
-        await createTableIfNotExists();
-        
-        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'No hay datos para exportar'
-            });
-        }
-
-        // Importar la librería XLSX
-        const XLSX = require('xlsx');
-
-        // Preparar datos para Excel
-        const excelData = result.rows.map(afiliado => ({
-            'ID Afiliado': afiliado.affiliate_id,
-            'Nombre': afiliado.nombre,
-            'Apellido': afiliado.apellido,
-            'Edad': afiliado.edad,
-            'Tipo Documento': afiliado.tipo_documento,
-            'Número Documento': afiliado.numero_documento,
-            'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
-            'Lugar Nacimiento': afiliado.lugar_nacimiento,
-            'Correo Electrónico': afiliado.correo,
-            'Tratamiento Datos Autorizado': afiliado.tratamiento_datos ? 'SÍ' : 'NO',
-            'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
-            'Estado': 'Activo'
-        }));
-
-        // Crear libro de trabajo y hoja
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(excelData);
-
-        // Agregar hoja al libro
-        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
-
-        // Configurar headers para descarga
-        const fileName = `afiliados_salud_total_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-
-        // Escribir archivo y enviar
-        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-        res.send(buffer);
-
-        console.log(`✅ Archivo Excel descargado: ${fileName} con ${result.rows.length} registros`);
-
-    } catch (error) {
-        console.error('❌ Error al generar Excel:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al generar archivo Excel: ' + error.message
-        });
+// ✅ LOGOUT
+app.post('/api/admin/logout', (req, res) => {
+    const sessionId = req.cookies?.sessionId;
+    
+    if (sessionId) {
+        activeSessions.delete(sessionId);
     }
-});
-
-// ✅ HEALTH CHECK
-app.get('/api/health', (req, res) => {
+    
+    res.clearCookie('sessionId');
     res.json({
         success: true,
-        message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        status: 'operational',
-        features: {
-            formularioAfiliacion: true,
-            tratamientoDatos: true,
-            baseDatos: true,
-            panelAdmin: true,
-            exportExcel: true
-        }
+        message: 'Sesión cerrada'
     });
 });
 
-// ✅ RUTA PARA VER DATOS EN TABLA
-app.get('/admin/afiliados', async (req, res) => {
+// ==============================================
+// 📊 RUTAS DE ADMINISTRACIÓN (PROTEGIDAS)
+// ==============================================
+
+// ✅ PANEL DE AFILIADOS (PROTEGIDO)
+app.get('/admin/afiliados', requireAuth, async (req, res) => {
     try {
-        // ✅ CREAR TABLA SI NO EXISTE
-        await createTableIfNotExists();
-        
         const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
         
         let html = `
@@ -1601,7 +1858,7 @@ app.get('/admin/afiliados', async (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Afiliados - Salud Total EPS</title>
+            <title>Panel de Administración - Salud Total EPS</title>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
                 * {
@@ -1631,6 +1888,7 @@ app.get('/admin/afiliados', async (req, res) => {
                     color: white;
                     padding: 30px;
                     text-align: center;
+                    position: relative;
                 }
                 
                 .admin-header h1 {
@@ -1641,6 +1899,33 @@ app.get('/admin/afiliados', async (req, res) => {
                 .admin-header p {
                     opacity: 0.9;
                     font-size: 1.1rem;
+                }
+                
+                .user-info {
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    color: white;
+                }
+                
+                .logout-btn {
+                    background: rgba(255, 255, 255, 0.2);
+                    color: white;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    text-decoration: none;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                }
+                
+                .logout-btn:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                    transform: translateY(-2px);
                 }
                 
                 .stats-container {
@@ -1858,6 +2143,12 @@ app.get('/admin/afiliados', async (req, res) => {
                         width: 100%;
                         justify-content: center;
                     }
+                    
+                    .user-info {
+                        position: static;
+                        justify-content: center;
+                        margin-top: 15px;
+                    }
                 }
             </style>
         </head>
@@ -1868,6 +2159,12 @@ app.get('/admin/afiliados', async (req, res) => {
                 <div class="admin-header">
                     <h1>🏥 Salud Total EPS</h1>
                     <p>Panel de Administración - Sistema de Afiliaciones</p>
+                    <div class="user-info">
+                        <span><i class="fas fa-user"></i> ${req.user.username}</span>
+                        <button class="logout-btn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="stats-container">
@@ -1895,10 +2192,6 @@ app.get('/admin/afiliados', async (req, res) => {
                         <i class="fas fa-database"></i>
                         <h2>No hay afiliados registrados</h2>
                         <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
-                        <p style="margin-top: 20px; font-size: 0.9rem; color: #0055A4;">
-                            <i class="fas fa-info-circle"></i>
-                            ¡La tabla está lista! Puedes registrar afiliados desde el formulario principal.
-                        </p>
                     </div>`;
         } else {
             html += `
@@ -1977,6 +2270,24 @@ app.get('/admin/afiliados', async (req, res) => {
                     }, 4000);
                 }
                 
+                async function logout() {
+                    try {
+                        const response = await fetch('/api/admin/logout', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'}
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            window.location.href = '/admin/login';
+                        }
+                    } catch (error) {
+                        console.error('Error al cerrar sesión:', error);
+                        window.location.href = '/admin/login';
+                    }
+                }
+                
                 // Delete affiliate function
                 async function deleteAffiliate(affiliateId, fullName) {
                     if (confirm('¿Estás seguro de que deseas eliminar al afiliado: ' + fullName + '?\\n\\nEsta acción no se puede deshacer.')) {
@@ -2020,6 +2331,112 @@ app.get('/admin/afiliados', async (req, res) => {
     }
 });
 
+// ✅ DESCARGAR EXCEL (PROTEGIDO)
+app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No hay datos para exportar'
+            });
+        }
+
+        const XLSX = require('xlsx');
+        const excelData = result.rows.map(afiliado => ({
+            'ID Afiliado': afiliado.affiliate_id,
+            'Nombre': afiliado.nombre,
+            'Apellido': afiliado.apellido,
+            'Edad': afiliado.edad,
+            'Tipo Documento': afiliado.tipo_documento,
+            'Número Documento': afiliado.numero_documento,
+            'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
+            'Lugar Nacimiento': afiliado.lugar_nacimiento,
+            'Correo Electrónico': afiliado.correo,
+            'Tratamiento Datos Autorizado': afiliado.tratamiento_datos ? 'SÍ' : 'NO',
+            'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
+            'Estado': 'Activo'
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
+
+        const fileName = `afiliados_salud_total_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.send(buffer);
+
+        console.log(`✅ Archivo Excel descargado por ${req.user.username}`);
+
+    } catch (error) {
+        console.error('❌ Error al generar Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al generar archivo Excel: ' + error.message
+        });
+    }
+});
+
+// ✅ ELIMINAR AFILIADO (PROTEGIDO)
+app.delete('/api/afiliados/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log(`🗑️ ${req.user.username} eliminando afiliado ID: ${id}`);
+        
+        const result = await pool.query(
+            'DELETE FROM affiliates WHERE affiliate_id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Afiliado no encontrado'
+            });
+        }
+
+        console.log('✅ Afiliado eliminado por', req.user.username);
+        
+        res.json({
+            success: true,
+            message: '✅ Afiliado eliminado exitosamente',
+            data: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al eliminar afiliado:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar afiliado: ' + error.message
+        });
+    }
+});
+
+// ✅ HEALTH CHECK
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
+        timestamp: new Date().toISOString(),
+        version: '1.1.0',
+        status: 'operational',
+        features: {
+            formularioAfiliacion: true,
+            tratamientoDatos: true,
+            baseDatos: true,
+            panelAdmin: true,
+            exportExcel: true,
+            autenticacion: true
+        }
+    });
+});
+
 // ==============================================
 // 🛡️ MANEJO DE ERRORES
 // ==============================================
@@ -2035,9 +2452,10 @@ app.use('*', (req, res) => {
             'GET / - Formulario de afiliación',
             'POST /api/formulario/solicitud - Enviar formulario',
             'GET /api/health - Health check',
-            'GET /admin/afiliados - Ver afiliados en tabla',
-            'GET /admin/descargar-excel - Descargar Excel con datos',
-            'DELETE /api/afiliados/:id - Eliminar afiliado'
+            'GET /admin/login - Login administrativo',
+            'GET /admin/afiliados - Ver afiliados (requiere login)',
+            'GET /admin/descargar-excel - Descargar Excel (requiere login)',
+            'DELETE /api/afiliados/:id - Eliminar afiliado (requiere login)'
         ]
     });
 });
@@ -2046,15 +2464,16 @@ app.use('*', (req, res) => {
 // 🚀 INICIO DEL SERVIDOR
 // ==============================================
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: http://localhost:${PORT}`);
+    console.log(`🔐 Login Admin: http://localhost:${PORT}/admin/login`);
     console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
-    console.log(`📊 Panel Admin: http://localhost:${PORT}/admin/afiliados`);
-    console.log(`📥 Descarga Excel: http://localhost:${PORT}/admin/descargar-excel`);
     console.log(`🗄️  Base de datos: ${process.env.DATABASE_URL ? 'Conectada' : 'No configurada'}`);
-    console.log(`🛡️  Sistema de Tratamiento de Datos implementado`);
-    console.log(`⚠️  Autorización de datos: OBLIGATORIA para afiliación`);
+    console.log(`🛡️  Sistema de Autenticación implementado`);
+    console.log(`⚠️  Usuario por defecto: admin / admin123`);
+    
+    await createTablesIfNotExists();
     ensureFrontendExists();
 });
 
