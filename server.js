@@ -1109,73 +1109,6 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA ACTUALIZAR UN AFILIADO
-app.put('/api/afiliados/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const formData = req.body;
-        
-        console.log(`📝 Actualizando afiliado ID: ${id}`, formData);
-        
-        const result = await pool.query(
-            `UPDATE affiliates 
-             SET nombre = $1, apellido = $2, edad = $3, tipo_documento = $4, 
-                 numero_documento = $5, fecha_nacimiento = $6, lugar_nacimiento = $7, correo = $8
-             WHERE affiliate_id = $9 
-             RETURNING *`,
-            [
-                formData.nombre,
-                formData.apellido,
-                formData.edad,
-                formData.tipo_documento,
-                formData.numero_documento,
-                formData.fecha_nacimiento,
-                formData.lugar_nacimiento,
-                formData.correo,
-                id
-            ]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: '❌ Afiliado no encontrado'
-            });
-        }
-
-        console.log('✅ Afiliado actualizado:', result.rows[0]);
-        
-        res.json({
-            success: true,
-            message: '✅ Afiliado actualizado exitosamente',
-            data: result.rows[0]
-        });
-        
-    } catch (error) {
-        console.error('❌ Error al actualizar afiliado:', error);
-        
-        if (error.code === '23505') {
-            if (error.constraint === 'affiliates_correo_key') {
-                return res.status(400).json({
-                    success: false,
-                    message: '❌ Este correo electrónico ya está registrado por otro afiliado'
-                });
-            }
-            if (error.constraint === 'affiliates_numero_documento_key') {
-                return res.status(400).json({
-                    success: false,
-                    message: '❌ Este número de documento ya está registrado por otro afiliado'
-                });
-            }
-        }
-        
-        res.status(500).json({
-            success: false,
-            message: 'Error al actualizar afiliado: ' + error.message
-        });
-    }
-});
-
 // ✅ RUTA PARA ELIMINAR UN AFILIADO
 app.delete('/api/afiliados/:id', async (req, res) => {
     try {
@@ -1404,7 +1337,7 @@ app.get('/admin/afiliados', async (req, res) => {
                     border-radius: 10px;
                     overflow: hidden;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                    min-width: 1200px;
+                    min-width: 1000px;
                 }
                 
                 th {
@@ -1451,16 +1384,6 @@ app.get('/admin/afiliados', async (req, res) => {
                     display: flex;
                     align-items: center;
                     gap: 5px;
-                }
-                
-                .btn-edit {
-                    background: #FBBF24;
-                    color: #92400E;
-                }
-                
-                .btn-edit:hover {
-                    background: #F59E0B;
-                    transform: translateY(-2px);
                 }
                 
                 .btn-delete {
@@ -1519,136 +1442,6 @@ app.get('/admin/afiliados', async (req, res) => {
                     font-size: 0.9rem;
                 }
                 
-                /* Modal Styles */
-                .modal {
-                    display: none;
-                    position: fixed;
-                    z-index: 1000;
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    animation: fadeIn 0.3s ease;
-                }
-                
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                
-                .modal-content {
-                    background-color: white;
-                    margin: 5% auto;
-                    padding: 30px;
-                    border-radius: 15px;
-                    width: 90%;
-                    max-width: 600px;
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-                    animation: slideIn 0.3s ease;
-                }
-                
-                @keyframes slideIn {
-                    from { transform: translateY(-50px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-                
-                .modal-header {
-                    display: flex;
-                    justify-content: between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
-                
-                .modal-title {
-                    font-size: 1.5rem;
-                    font-weight: 700;
-                    color: #0055A4;
-                }
-                
-                .close {
-                    color: #aaa;
-                    font-size: 28px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    background: none;
-                    border: none;
-                }
-                
-                .close:hover {
-                    color: #000;
-                }
-                
-                .form-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 15px;
-                    margin-bottom: 20px;
-                }
-                
-                .form-group {
-                    margin-bottom: 15px;
-                }
-                
-                .form-group.full-width {
-                    grid-column: 1 / -1;
-                }
-                
-                .form-label {
-                    display: block;
-                    margin-bottom: 5px;
-                    font-weight: 600;
-                    color: #374151;
-                    font-size: 0.9rem;
-                }
-                
-                .form-input {
-                    width: 100%;
-                    padding: 10px;
-                    border: 2px solid #E5E7EB;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    transition: border-color 0.3s ease;
-                }
-                
-                .form-input:focus {
-                    outline: none;
-                    border-color: #0055A4;
-                }
-                
-                .modal-actions {
-                    display: flex;
-                    gap: 10px;
-                    justify-content: flex-end;
-                    margin-top: 20px;
-                }
-                
-                .btn-cancel {
-                    background: #6B7280;
-                    color: white;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                }
-                
-                .btn-cancel:hover {
-                    background: #4B5563;
-                }
-                
-                .btn-save {
-                    background: #0055A4;
-                    color: white;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                }
-                
-                .btn-save:hover {
-                    background: #003366;
-                }
-                
                 .notification {
                     position: fixed;
                     top: 20px;
@@ -1687,76 +1480,11 @@ app.get('/admin/afiliados', async (req, res) => {
                         width: 100%;
                         justify-content: center;
                     }
-                    
-                    .form-grid {
-                        grid-template-columns: 1fr;
-                    }
-                    
-                    .modal-content {
-                        width: 95%;
-                        margin: 10% auto;
-                        padding: 20px;
-                    }
                 }
             </style>
         </head>
         <body>
             <div id="notification" class="notification" style="display: none;"></div>
-            
-            <div id="editModal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="modal-title">Editar Afiliado</h2>
-                        <button class="close">&times;</button>
-                    </div>
-                    <form id="editForm">
-                        <input type="hidden" id="editAffiliateId">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Nombre</label>
-                                <input type="text" class="form-input" id="editNombre" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Apellido</label>
-                                <input type="text" class="form-input" id="editApellido" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Edad</label>
-                                <input type="number" class="form-input" id="editEdad" min="0" max="120" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Tipo Documento</label>
-                                <select class="form-input" id="editTipoDocumento" required>
-                                    <option value="CC">Cédula de Ciudadanía</option>
-                                    <option value="CE">Cédula de Extranjería</option>
-                                    <option value="TI">Tarjeta de Identidad</option>
-                                    <option value="RC">Registro Civil</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Número Documento</label>
-                                <input type="text" class="form-input" id="editNumeroDocumento" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Fecha Nacimiento</label>
-                                <input type="date" class="form-input" id="editFechaNacimiento" required>
-                            </div>
-                            <div class="form-group full-width">
-                                <label class="form-label">Lugar Nacimiento</label>
-                                <input type="text" class="form-input" id="editLugarNacimiento" required>
-                            </div>
-                            <div class="form-group full-width">
-                                <label class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-input" id="editCorreo" required>
-                            </div>
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn-cancel">Cancelar</button>
-                            <button type="submit" class="btn-save">Guardar Cambios</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
 
             <div class="admin-container">
                 <div class="admin-header">
@@ -1828,9 +1556,6 @@ app.get('/admin/afiliados', async (req, res) => {
                                     <td><span class="badge">Activo</span></td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn btn-edit" onclick="editAffiliate('${afiliado.affiliate_id}')">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </button>
                                             <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </button>
@@ -1860,14 +1585,8 @@ app.get('/admin/afiliados', async (req, res) => {
             </div>
             
             <script>
-                // Modal functionality
-                const modal = document.getElementById('editModal');
-                const closeBtn = document.querySelector('.close');
-                const cancelBtn = document.querySelector('.btn-cancel');
-                const editForm = document.getElementById('editForm');
-                const notification = document.getElementById('notification');
-                
                 function showNotification(message, type) {
+                    const notification = document.getElementById('notification');
                     notification.textContent = message;
                     notification.className = 'notification ' + type;
                     notification.style.display = 'block';
@@ -1875,51 +1594,6 @@ app.get('/admin/afiliados', async (req, res) => {
                     setTimeout(() => {
                         notification.style.display = 'none';
                     }, 4000);
-                }
-                
-                function openModal() {
-                    modal.style.display = 'block';
-                }
-                
-                function closeModal() {
-                    modal.style.display = 'none';
-                    editForm.reset();
-                }
-                
-                closeBtn.onclick = closeModal;
-                cancelBtn.onclick = closeModal;
-                
-                window.onclick = function(event) {
-                    if (event.target === modal) {
-                        closeModal();
-                    }
-                }
-                
-                // Edit affiliate function
-                async function editAffiliate(affiliateId) {
-                    try {
-                        const response = await fetch('/api/afiliados/' + affiliateId);
-                        if (!response.ok) {
-                            throw new Error('Error al cargar datos del afiliado');
-                        }
-                        
-                        const affiliate = await response.json();
-                        
-                        // Fill form with affiliate data
-                        document.getElementById('editAffiliateId').value = affiliate.data.affiliate_id;
-                        document.getElementById('editNombre').value = affiliate.data.nombre;
-                        document.getElementById('editApellido').value = affiliate.data.apellido;
-                        document.getElementById('editEdad').value = affiliate.data.edad;
-                        document.getElementById('editTipoDocumento').value = affiliate.data.tipo_documento;
-                        document.getElementById('editNumeroDocumento').value = affiliate.data.numero_documento;
-                        document.getElementById('editFechaNacimiento').value = affiliate.data.fecha_nacimiento;
-                        document.getElementById('editLugarNacimiento').value = affiliate.data.lugar_nacimiento;
-                        document.getElementById('editCorreo').value = affiliate.data.correo;
-                        
-                        openModal();
-                    } catch (error) {
-                        showNotification('❌ ' + error.message, 'error');
-                    }
                 }
                 
                 // Delete affiliate function
@@ -1946,48 +1620,6 @@ app.get('/admin/afiliados', async (req, res) => {
                     }
                 }
                 
-                // Handle form submission
-                editForm.onsubmit = async function(e) {
-                    e.preventDefault();
-                    
-                    const formData = {
-                        nombre: document.getElementById('editNombre').value,
-                        apellido: document.getElementById('editApellido').value,
-                        edad: parseInt(document.getElementById('editEdad').value),
-                        tipo_documento: document.getElementById('editTipoDocumento').value,
-                        numero_documento: document.getElementById('editNumeroDocumento').value,
-                        fecha_nacimiento: document.getElementById('editFechaNacimiento').value,
-                        lugar_nacimiento: document.getElementById('editLugarNacimiento').value,
-                        correo: document.getElementById('editCorreo').value
-                    };
-                    
-                    const affiliateId = document.getElementById('editAffiliateId').value;
-                    
-                    try {
-                        const response = await fetch('/api/afiliados/' + affiliateId, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(formData)
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            showNotification('✅ ' + result.message, 'success');
-                            closeModal();
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1500);
-                        } else {
-                            throw new Error(result.message);
-                        }
-                    } catch (error) {
-                        showNotification('❌ ' + error.message, 'error');
-                    }
-                };
-                
                 // Agregar efecto de carga para el botón de Excel
                 document.querySelector('.stat-card.excel').addEventListener('click', function() {
                     this.style.transform = 'scale(0.95)';
@@ -1995,19 +1627,6 @@ app.get('/admin/afiliados', async (req, res) => {
                         this.style.transform = '';
                     }, 150);
                 });
-                
-                // Input validation
-                document.getElementById('editEdad').addEventListener('input', function() {
-                    if (this.value < 0) this.value = 0;
-                    if (this.value > 120) this.value = 120;
-                });
-                
-                document.getElementById('editNumeroDocumento').addEventListener('input', function() {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                });
-                
-                // Set max date for birth date
-                document.getElementById('editFechaNacimiento').max = new Date().toISOString().split('T')[0];
             </script>
         </body>
         </html>`;
@@ -2037,7 +1656,6 @@ app.use('*', (req, res) => {
             'GET /api/health - Health check',
             'GET /admin/afiliados - Ver afiliados en tabla',
             'GET /admin/descargar-excel - Descargar Excel con datos',
-            'PUT /api/afiliados/:id - Actualizar afiliado',
             'DELETE /api/afiliados/:id - Eliminar afiliado'
         ]
     });
