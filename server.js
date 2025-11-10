@@ -33,8 +33,6 @@ async function createTableIfNotExists() {
                 fecha_nacimiento DATE NOT NULL,
                 lugar_nacimiento VARCHAR(200) NOT NULL,
                 correo VARCHAR(150) UNIQUE NOT NULL,
-                tratamiento_datos BOOLEAN DEFAULT FALSE,
-                notificaciones BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -1143,15 +1141,6 @@ function ensureFrontendExists() {
                             para el proceso de afiliación al Sistema General de Seguridad Social en Salud.
                         </label>
                     </div>
-                    
-                    <div class="checkbox-item">
-                        <input type="checkbox" class="checkbox-input" id="notificaciones" name="notificaciones">
-                        <label for="notificaciones" class="checkbox-label">
-                            Autorizo de manera voluntaria el envío de información sobre servicios de salud, 
-                            novedades del plan de beneficios, campañas de promoción y prevención, y demás 
-                            comunicaciones relacionadas con mi afiliación.
-                        </label>
-                    </div>
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn">
@@ -1260,8 +1249,7 @@ function ensureFrontendExists() {
                 fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
                 lugar_nacimiento: document.getElementById('lugar_nacimiento').value.trim(),
                 correo: document.getElementById('correo').value.trim().toLowerCase(),
-                tratamiento_datos: document.getElementById('tratamiento_datos').checked,
-                notificaciones: document.getElementById('notificaciones').checked
+                tratamiento_datos: document.getElementById('tratamiento_datos').checked
             };
 
             const validationErrors = validateForm(formData);
@@ -1386,8 +1374,8 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         // ✅ GUARDAR EN POSTGRESQL
         const result = await pool.query(
             `INSERT INTO affiliates 
-            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, notificaciones, affiliate_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, affiliate_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *`,
             [
                 formData.nombre,
@@ -1398,8 +1386,6 @@ app.post('/api/formulario/solicitud', async (req, res) => {
                 formData.fecha_nacimiento,
                 formData.lugar_nacimiento,
                 formData.correo,
-                formData.tratamiento_datos,
-                formData.notificaciones || false,
                 'ST-' + Date.now()
             ]
         );
@@ -1411,8 +1397,6 @@ app.post('/api/formulario/solicitud', async (req, res) => {
             message: '✅ Afiliación registrada exitosamente en Salud Total EPS',
             data: result.rows[0],
             affiliateId: result.rows[0].affiliate_id,
-            tratamientoDatos: result.rows[0].tratamiento_datos,
-            notificaciones: result.rows[0].notificaciones,
             timestamp: new Date().toISOString()
         });
         
@@ -1442,6 +1426,103 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
+// ✅ RUTA PARA ELIMINAR UN AFILIADO
+app.delete('/api/afiliados/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log(`🗑️ Eliminando afiliado ID: ${id}`);
+        
+        const result = await pool.query(
+            'DELETE FROM affiliates WHERE affiliate_id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Afiliado no encontrado'
+            });
+        }
+
+        console.log('✅ Afiliado eliminado:', result.rows[0]);
+        
+        res.json({
+            success: true,
+            message: '✅ Afiliado eliminado exitosamente',
+            data: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al eliminar afiliado:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar afiliado: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL
+app.get('/admin/descargar-excel', async (req, res) => {
+    try {
+        // ✅ CREAR TABLA SI NO EXISTE
+        await createTableIfNotExists();
+        
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No hay datos para exportar'
+            });
+        }
+
+        // Importar la librería XLSX
+        const XLSX = require('xlsx');
+
+        // Preparar datos para Excel
+        const excelData = result.rows.map(afiliado => ({
+            'ID Afiliado': afiliado.affiliate_id,
+            'Nombre': afiliado.nombre,
+            'Apellido': afiliado.apellido,
+            'Edad': afiliado.edad,
+            'Tipo Documento': afiliado.tipo_documento,
+            'Número Documento': afiliado.numero_documento,
+            'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
+            'Lugar Nacimiento': afiliado.lugar_nacimiento,
+            'Correo Electrónico': afiliado.correo,
+            'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
+            'Estado': 'Activo'
+        }));
+
+        // Crear libro de trabajo y hoja
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+
+        // Agregar hoja al libro
+        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
+
+        // Configurar headers para descarga
+        const fileName = `afiliados_salud_total_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        // Escribir archivo y enviar
+        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.send(buffer);
+
+        console.log(`✅ Archivo Excel descargado: ${fileName} con ${result.rows.length} registros`);
+
+    } catch (error) {
+        console.error('❌ Error al generar Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al generar archivo Excel: ' + error.message
+        });
+    }
+});
+
 // ✅ HEALTH CHECK
 app.get('/api/health', (req, res) => {
     res.json({
@@ -1449,13 +1530,430 @@ app.get('/api/health', (req, res) => {
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        status: 'operational',
-        features: {
-            formularioAfiliacion: true,
-            tratamientoDatos: true,
-            baseDatos: true
-        }
+        status: 'operational'
     });
+});
+
+// ✅ RUTA PARA VER DATOS EN TABLA
+app.get('/admin/afiliados', async (req, res) => {
+    try {
+        // ✅ CREAR TABLA SI NO EXISTE
+        await createTableIfNotExists();
+        
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        let html = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Afiliados - Salud Total EPS</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                }
+                
+                body {
+                    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+                    min-height: 100vh;
+                    padding: 20px;
+                }
+                
+                .admin-container {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0, 85, 164, 0.1);
+                    overflow: hidden;
+                }
+                
+                .admin-header {
+                    background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
+                    color: white;
+                    padding: 30px;
+                    text-align: center;
+                }
+                
+                .admin-header h1 {
+                    font-size: 2.5rem;
+                    margin-bottom: 10px;
+                }
+                
+                .admin-header p {
+                    opacity: 0.9;
+                    font-size: 1.1rem;
+                }
+                
+                .stats-container {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                    padding: 30px;
+                    background: #f8f9fa;
+                }
+                
+                .stat-card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 10px;
+                    text-align: center;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    border-left: 4px solid #0055A4;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    cursor: pointer;
+                }
+                
+                .stat-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                }
+                
+                .stat-card.excel {
+                    background: linear-gradient(135deg, #00A859, #008046);
+                    color: white;
+                    border-left: 4px solid #00A859;
+                }
+                
+                .stat-number {
+                    font-size: 2.5rem;
+                    font-weight: bold;
+                    color: #0055A4;
+                    margin-bottom: 5px;
+                }
+                
+                .stat-card.excel .stat-number {
+                    color: white;
+                }
+                
+                .stat-label {
+                    color: #666;
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+                
+                .stat-card.excel .stat-label {
+                    color: rgba(255, 255, 255, 0.9);
+                }
+                
+                .data-table {
+                    padding: 0 30px 30px;
+                    overflow-x: auto;
+                }
+                
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    background: white;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    min-width: 1000px;
+                }
+                
+                th {
+                    background: #0055A4;
+                    color: white;
+                    padding: 15px;
+                    text-align: left;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                }
+                
+                td {
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #e5e7eb;
+                    font-size: 0.85rem;
+                }
+                
+                tr:hover {
+                    background: #f0f7ff;
+                }
+                
+                .badge {
+                    background: #00A859;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                }
+                
+                .action-buttons {
+                    display: flex;
+                    gap: 8px;
+                }
+                
+                .btn {
+                    padding: 6px 12px;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+                
+                .btn-delete {
+                    background: #EF4444;
+                    color: white;
+                }
+                
+                .btn-delete:hover {
+                    background: #DC2626;
+                    transform: translateY(-2px);
+                }
+                
+                .empty-state {
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: #666;
+                }
+                
+                .empty-state i {
+                    font-size: 3rem;
+                    margin-bottom: 20px;
+                    color: #0055A4;
+                }
+                
+                .download-section {
+                    text-align: center;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-top: 1px solid #e5e7eb;
+                }
+                
+                .download-btn {
+                    background: linear-gradient(135deg, #00A859, #008046);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    text-decoration: none;
+                }
+                
+                .download-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(0, 168, 89, 0.3);
+                }
+                
+                .download-info {
+                    margin-top: 10px;
+                    color: #666;
+                    font-size: 0.9rem;
+                }
+                
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 600;
+                    z-index: 1001;
+                    animation: slideInRight 0.3s ease;
+                }
+                
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                .notification.success {
+                    background: #00A859;
+                }
+                
+                .notification.error {
+                    background: #EF4444;
+                }
+                
+                @media (max-width: 768px) {
+                    .stats-container {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .data-table {
+                        padding: 0 15px 20px;
+                    }
+                    
+                    .download-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div id="notification" class="notification" style="display: none;"></div>
+
+            <div class="admin-container">
+                <div class="admin-header">
+                    <h1>🏥 Salud Total EPS</h1>
+                    <p>Panel de Administración - Sistema de Afiliaciones</p>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">${result.rows.length}</div>
+                        <div class="stat-label">Total Afiliados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${new Date().getFullYear()}</div>
+                        <div class="stat-label">Año Actual</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${new Date().toLocaleDateString('es-CO')}</div>
+                        <div class="stat-label">Fecha Actual</div>
+                    </div>
+                    <div class="stat-card excel" onclick="window.location.href='/admin/descargar-excel'">
+                        <div class="stat-number"><i class="fas fa-file-excel"></i></div>
+                        <div class="stat-label">Descargar Excel</div>
+                    </div>
+                </div>`;
+        
+        if (result.rows.length === 0) {
+            html += `
+                    <div class="empty-state">
+                        <i class="fas fa-database"></i>
+                        <h2>No hay afiliados registrados</h2>
+                        <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
+                        <p style="margin-top: 20px; font-size: 0.9rem; color: #0055A4;">
+                            <i class="fas fa-info-circle"></i>
+                            ¡La tabla está lista! Puedes registrar afiliados desde el formulario principal.
+                        </p>
+                    </div>`;
+        } else {
+            html += `
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Afiliado</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Documento</th>
+                                    <th>Email</th>
+                                    <th>Edad</th>
+                                    <th>Lugar Nacimiento</th>
+                                    <th>Fecha Nacimiento</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+            
+            result.rows.forEach(afiliado => {
+                html += `
+                                <tr>
+                                    <td><strong>${afiliado.affiliate_id}</strong></td>
+                                    <td>${afiliado.nombre} ${afiliado.apellido}</td>
+                                    <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
+                                    <td>${afiliado.correo}</td>
+                                    <td>${afiliado.edad} años</td>
+                                    <td>${afiliado.lugar_nacimiento}</td>
+                                    <td>${new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO')}</td>
+                                    <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
+                                    <td><span class="badge">Activo</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>`;
+            });
+            
+            html += `
+                            </tbody>
+                        </table>
+                    </div>`;
+        }
+        
+        html += `
+                </div>
+                
+                <div class="download-section">
+                    <a href="/admin/descargar-excel" class="download-btn">
+                        <i class="fas fa-file-excel"></i>
+                        DESCARGAR REPORTE COMPLETO EN EXCEL
+                    </a>
+                    <div class="download-info">
+                        Descarga todos los datos de afiliados en formato Excel (.xlsx) - ${result.rows.length} registros disponibles
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                function showNotification(message, type) {
+                    const notification = document.getElementById('notification');
+                    notification.textContent = message;
+                    notification.className = 'notification ' + type;
+                    notification.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 4000);
+                }
+                
+                // Delete affiliate function
+                async function deleteAffiliate(affiliateId, fullName) {
+                    if (confirm('¿Estás seguro de que deseas eliminar al afiliado: ' + fullName + '?\\n\\nEsta acción no se puede deshacer.')) {
+                        try {
+                            const response = await fetch('/api/afiliados/' + affiliateId, {
+                                method: 'DELETE'
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                showNotification('✅ ' + result.message, 'success');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            showNotification('❌ ' + error.message, 'error');
+                        }
+                    }
+                }
+                
+                // Agregar efecto de carga para el botón de Excel
+                document.querySelector('.stat-card.excel').addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            </script>
+        </body>
+        </html>`;
+        
+        res.send(html);
+        
+    } catch (error) {
+        console.error('❌ Error en panel admin:', error);
+        res.status(500).send('Error al cargar los datos: ' + error.message);
+    }
 });
 
 // ==============================================
@@ -1472,7 +1970,10 @@ app.use('*', (req, res) => {
         availableRoutes: [
             'GET / - Formulario de afiliación',
             'POST /api/formulario/solicitud - Enviar formulario',
-            'GET /api/health - Health check'
+            'GET /api/health - Health check',
+            'GET /admin/afiliados - Ver afiliados en tabla',
+            'GET /admin/descargar-excel - Descargar Excel con datos',
+            'DELETE /api/afiliados/:id - Eliminar afiliado'
         ]
     });
 });
@@ -1485,6 +1986,8 @@ app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: http://localhost:${PORT}`);
     console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`📊 Panel Admin: http://localhost:${PORT}/admin/afiliados`);
+    console.log(`📥 Descarga Excel: http://localhost:${PORT}/admin/descargar-excel`);
     console.log(`🗄️  Base de datos: ${process.env.DATABASE_URL ? 'Conectada' : 'No configurada'}`);
     console.log(`🛡️  Sistema de Tratamiento de Datos implementado`);
     console.log(`⚠️  Autorización de datos: OBLIGATORIA para afiliación`);
