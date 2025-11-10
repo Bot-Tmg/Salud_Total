@@ -33,6 +33,7 @@ async function createTableIfNotExists() {
                 fecha_nacimiento DATE NOT NULL,
                 lugar_nacimiento VARCHAR(200) NOT NULL,
                 correo VARCHAR(150) UNIQUE NOT NULL,
+                tratamiento_datos BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -931,52 +932,63 @@ function ensureFrontendExists() {
                 </button>
             </div>
             <div class="modal-body">
-                <h3>1. Responsable del Tratamiento</h3>
-                <p><strong>Salud Total EPS S.A.</strong>, identificada con NIT 830.035.375-8, con domicilio principal en Bogotá D.C., será responsable del tratamiento de los datos personales que usted nos suministre.</p>
+                <h3>1. Marco Legal</h3>
+                <p>Esta política se rige por la <strong>Ley 1581 de 2012</strong> y el <strong>Decreto 1377 de 2013</strong> sobre protección de datos personales en Colombia, y por las disposiciones del <strong>Régimen de Protección de Datos Personales</strong>.</p>
 
                 <h3>2. Finalidades del Tratamiento</h3>
                 <p>Sus datos personales serán utilizados para las siguientes finalidades:</p>
                 <ul>
-                    <li>Gestionar su proceso de afiliación al Sistema General de Seguridad Social en Salud</li>
+                    <li>Gestionar su proceso de afiliación al Sistema General de Seguridad Social en Salud (SGSSS)</li>
                     <li>Prestar los servicios de salud a los que tenga derecho como afiliado</li>
-                    <li>Mantener actualizada la información en nuestra base de datos</li>
-                    <li>Enviar información relevante sobre servicios de salud y novedades del plan de beneficios</li>
-                    <li>Cumplir con las obligaciones legales y regulatorias aplicables</li>
+                    <li>Elaborar y mantener su historia clínica</li>
+                    <li>Realizar procesos de auditoría y control de calidad en salud</li>
+                    <li>Cumplir con las obligaciones legales y regulatorias como EPS</li>
+                    <li>Gestionar los procesos administrativos de la afiliación</li>
+                    <li>Contactarlo para información relevante sobre servicios de salud</li>
                 </ul>
 
                 <h3>3. Derechos del Titular</h3>
-                <p>De conformidad con la Ley 1581 de 2012, usted tiene derecho a:</p>
+                <p>De conformidad con la normativa vigente, usted tiene derecho a:</p>
                 <ul>
-                    <li>Conocer, actualizar y rectificar sus datos personales</li>
-                    <li>Solicitar prueba de la autorización otorgada</li>
-                    <li>Ser informado sobre el uso que se ha dado a sus datos</li>
-                    <li>Presentar quejas ante la Superintendencia de Industria y Comercio</li>
-                    <li>Revocar la autorización y/o solicitar la supresión de los datos</li>
-                    <li>Acceder en forma gratuita a sus datos personales</li>
+                    <li><strong>Acceso:</strong> Conocer su información personal almacenada</li>
+                    <li><strong>Rectificación:</strong> Actualizar o corregir datos inexactos</li>
+                    <li><strong>Cancelación:</strong> Solicitar la supresión de sus datos</li>
+                    <li><strong>Oposición:</strong> Oponerse al tratamiento en ciertos casos</li>
+                    <li><strong>Revocatoria:</strong> Revocar la autorización otorgada</li>
+                    <li><strong>Consulta y reclamos:</strong> Presentar consultas y reclamos sobre el tratamiento</li>
                 </ul>
 
-                <h3>4. Procedimiento para Ejercer sus Derechos</h3>
-                <p>Para ejercer sus derechos, puede contactarnos a través de:</p>
+                <h3>4. Procedimiento para Ejercer Derechos</h3>
+                <p>Para ejercer sus derechos, puede:</p>
                 <ul>
-                    <li><strong>Línea de atención:</strong> 01-8000-123456</li>
-                    <li><strong>Correo electrónico:</strong> proteccion.datos@saludtotal.com</li>
-                    <li><strong>Dirección:</strong> Carrera 15 # 95-74, Bogotá D.C.</li>
+                    <li>Presentar su solicitud directamente en las sedes de la EPS</li>
+                    <li>Utilizar los canales de atención al usuario establecidos</li>
+                    <li>Seguir el procedimiento establecido en el Manual de Políticas y Procedimientos</li>
+                    <li>La EPS dispondrá de hasta 10 días hábiles para responder su solicitud</li>
                 </ul>
 
-                <h3>5. Vigencia</h3>
-                <p>La base de datos será conservada por el tiempo necesario para cumplir con las finalidades del tratamiento y las obligaciones legales aplicables.</p>
-
-                <h3>6. Transferencias y Encargados</h3>
+                <h3>5. Transferencia de Datos</h3>
                 <p>Sus datos podrán ser compartidos con:</p>
                 <ul>
+                    <li>Instituciones Prestadoras de Servicios de Salud (IPS)</li>
                     <li>Entidades del Sistema de Seguridad Social en Salud</li>
-                    <li>Proveedores de servicios de salud (IPS, clínicas, hospitales)</li>
-                    <li>Entidades de control y vigilancia (SuperSalud, Ministerio de Salud)</li>
+                    <li>Entidades de control y vigilancia (Superintendencia Nacional de Salud, Ministerio de Salud)</li>
+                    <li>Auditorías externas autorizadas</li>
+                    <li>Proveedores de servicios con quienes se tenga relación contractual</li>
                 </ul>
 
-                <p style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--salud-total-blue);">
-                    <strong>Nota importante:</strong> Al marcar las casillas de autorización en el formulario, usted declara haber leído, entendido y aceptado esta política de tratamiento de datos personales.
-                </p>
+                <h3>6. Seguridad de la Información</h3>
+                <p>La EPS implementa medidas técnicas, humanas y administrativas para proteger sus datos personales contra accesos no autorizados, pérdida, destrucción, uso, modificación o divulgación indebida.</p>
+
+                <h3>7. Vigencia</h3>
+                <p>La base de datos será conservada por el tiempo necesario para cumplir con las finalidades del tratamiento y las obligaciones legales, contables y de auditoría aplicables.</p>
+
+                <h3>8. Autorización</h3>
+                <p>Al marcar la casilla de autorización, usted declara haber leído, entendido y aceptado esta política de tratamiento de datos personales, y autoriza de manera expresa e informada a la EPS para el tratamiento de sus datos conforme a lo aquí establecido.</p>
+
+                <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--salud-total-blue); margin-top: 20px;">
+                    <strong>Nota importante:</strong> Esta autorización es obligatoria para el proceso de afiliación al Sistema General de Seguridad Social en Salud. El tratamiento de datos personales en el sector salud está amparado por el secreto profesional y las normas de confidencialidad médica.
+                </div>
             </div>
         </div>
     </div>
@@ -1134,11 +1146,10 @@ function ensureFrontendExists() {
                         <input type="checkbox" class="checkbox-input" id="tratamiento_datos" name="tratamiento_datos" required>
                         <label for="tratamiento_datos" class="checkbox-label">
                             <span class="required-checkbox">*</span> 
-                            <strong>AUTORIZO </strong> el tratamiento de mis datos personales por 
-                            <strong>Salud Total EPS S.A.</strong> conforme a la 
+                            <strong>AUTORIZO OBLIGATORIAMENTE</strong> el tratamiento de mis datos personales conforme a la 
                             <a href="#" id="openPrivacyPolicy">Política de Tratamiento de Datos</a> 
                             y la Ley 1581 de 2012. Entiendo que esta autorización es <strong>requisito indispensable</strong> 
-                            para el proceso de afiliación al Sistema General de Seguridad Social en Salud.
+                            para el proceso de afiliación al Sistema General de Seguridad Social en Salud y conozco mis derechos de acceso, rectificación, cancelación y oposición.
                         </label>
                     </div>
                 </div>
@@ -1374,8 +1385,8 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         // ✅ GUARDAR EN POSTGRESQL
         const result = await pool.query(
             `INSERT INTO affiliates 
-            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, affiliate_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, affiliate_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *`,
             [
                 formData.nombre,
@@ -1386,6 +1397,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
                 formData.fecha_nacimiento,
                 formData.lugar_nacimiento,
                 formData.correo,
+                formData.tratamiento_datos,
                 'ST-' + Date.now()
             ]
         );
@@ -1397,6 +1409,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
             message: '✅ Afiliación registrada exitosamente en Salud Total EPS',
             data: result.rows[0],
             affiliateId: result.rows[0].affiliate_id,
+            tratamientoDatos: result.rows[0].tratamiento_datos,
             timestamp: new Date().toISOString()
         });
         
@@ -1491,6 +1504,7 @@ app.get('/admin/descargar-excel', async (req, res) => {
             'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
             'Lugar Nacimiento': afiliado.lugar_nacimiento,
             'Correo Electrónico': afiliado.correo,
+            'Tratamiento Datos Autorizado': afiliado.tratamiento_datos ? 'SÍ' : 'NO',
             'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
             'Estado': 'Activo'
         }));
@@ -1530,7 +1544,14 @@ app.get('/api/health', (req, res) => {
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        status: 'operational'
+        status: 'operational',
+        features: {
+            formularioAfiliacion: true,
+            tratamientoDatos: true,
+            baseDatos: true,
+            panelAdmin: true,
+            exportExcel: true
+        }
     });
 });
 
@@ -1677,12 +1698,20 @@ app.get('/admin/afiliados', async (req, res) => {
                 }
                 
                 .badge {
-                    background: #00A859;
-                    color: white;
                     padding: 4px 8px;
                     border-radius: 12px;
                     font-size: 0.7rem;
                     font-weight: 600;
+                }
+                
+                .badge-success {
+                    background: #D1FAE5;
+                    color: #065F46;
+                }
+                
+                .badge-warning {
+                    background: #FEF3C7;
+                    color: #92400E;
                 }
                 
                 .action-buttons {
@@ -1815,12 +1844,12 @@ app.get('/admin/afiliados', async (req, res) => {
                         <div class="stat-label">Total Afiliados</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${new Date().getFullYear()}</div>
-                        <div class="stat-label">Año Actual</div>
+                        <div class="stat-number">${result.rows.filter(a => a.tratamiento_datos).length}</div>
+                        <div class="stat-label">Tratamiento Autorizado</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${new Date().toLocaleDateString('es-CO')}</div>
-                        <div class="stat-label">Fecha Actual</div>
+                        <div class="stat-number">${new Date().getFullYear()}</div>
+                        <div class="stat-label">Año Actual</div>
                     </div>
                     <div class="stat-card excel" onclick="window.location.href='/admin/descargar-excel'">
                         <div class="stat-number"><i class="fas fa-file-excel"></i></div>
@@ -1850,10 +1879,9 @@ app.get('/admin/afiliados', async (req, res) => {
                                     <th>Documento</th>
                                     <th>Email</th>
                                     <th>Edad</th>
+                                    <th>Tratamiento Datos</th>
                                     <th>Lugar Nacimiento</th>
-                                    <th>Fecha Nacimiento</th>
                                     <th>Fecha Registro</th>
-                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -1867,10 +1895,13 @@ app.get('/admin/afiliados', async (req, res) => {
                                     <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
                                     <td>${afiliado.correo}</td>
                                     <td>${afiliado.edad} años</td>
+                                    <td>
+                                        <span class="badge ${afiliado.tratamiento_datos ? 'badge-success' : 'badge-warning'}">
+                                            ${afiliado.tratamiento_datos ? 'AUTORIZADO' : 'NO AUTORIZADO'}
+                                        </span>
+                                    </td>
                                     <td>${afiliado.lugar_nacimiento}</td>
-                                    <td>${new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO')}</td>
                                     <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
-                                    <td><span class="badge">Activo</span></td>
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
@@ -1896,7 +1927,8 @@ app.get('/admin/afiliados', async (req, res) => {
                         DESCARGAR REPORTE COMPLETO EN EXCEL
                     </a>
                     <div class="download-info">
-                        Descarga todos los datos de afiliados en formato Excel (.xlsx) - ${result.rows.length} registros disponibles
+                        ${result.rows.length} registros disponibles | 
+                        Tratamiento de datos autorizado: ${result.rows.filter(a => a.tratamiento_datos).length} afiliados
                     </div>
                 </div>
             </div>
@@ -2004,4 +2036,3 @@ process.on('SIGINT', () => {
     console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
-
