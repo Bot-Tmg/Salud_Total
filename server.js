@@ -21,25 +21,57 @@ const pool = new Pool({
 async function createTableIfNotExists() {
     try {
         console.log('🔍 Verificando si existe la tabla affiliates...');
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS affiliates (
-                id SERIAL PRIMARY KEY,
-                affiliate_id VARCHAR(50) UNIQUE NOT NULL,
-                nombre VARCHAR(100) NOT NULL,
-                apellido VARCHAR(100) NOT NULL,
-                edad INTEGER NOT NULL,
-                tipo_documento VARCHAR(10) NOT NULL,
-                numero_documento VARCHAR(20) UNIQUE NOT NULL,
-                fecha_nacimiento DATE NOT NULL,
-                lugar_nacimiento VARCHAR(200) NOT NULL,
-                correo VARCHAR(150) UNIQUE NOT NULL,
-                tratamiento_datos BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        
+        // Primero verificar si la tabla existe
+        const tableExists = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'affiliates'
             );
         `);
-        console.log('✅ Tabla affiliates lista para usar');
+        
+        if (!tableExists.rows[0].exists) {
+            // Crear tabla nueva con la columna tratamiento_datos
+            await pool.query(`
+                CREATE TABLE affiliates (
+                    id SERIAL PRIMARY KEY,
+                    affiliate_id VARCHAR(50) UNIQUE NOT NULL,
+                    nombre VARCHAR(100) NOT NULL,
+                    apellido VARCHAR(100) NOT NULL,
+                    edad INTEGER NOT NULL,
+                    tipo_documento VARCHAR(10) NOT NULL,
+                    numero_documento VARCHAR(20) UNIQUE NOT NULL,
+                    fecha_nacimiento DATE NOT NULL,
+                    lugar_nacimiento VARCHAR(200) NOT NULL,
+                    correo VARCHAR(150) UNIQUE NOT NULL,
+                    tratamiento_datos BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
+            console.log('✅ Tabla affiliates creada con columna tratamiento_datos');
+        } else {
+            // Verificar si la columna tratamiento_datos existe
+            const columnExists = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.columns 
+                    WHERE table_name = 'affiliates' AND column_name = 'tratamiento_datos'
+                );
+            `);
+            
+            if (!columnExists.rows[0].exists) {
+                // Agregar la columna si no existe
+                await pool.query(`
+                    ALTER TABLE affiliates 
+                    ADD COLUMN tratamiento_datos BOOLEAN DEFAULT FALSE;
+                `);
+                console.log('✅ Columna tratamiento_datos agregada a la tabla existente');
+            } else {
+                console.log('✅ Tabla affiliates ya tiene la columna tratamiento_datos');
+            }
+        }
+        
     } catch (error) {
-        console.error('❌ Error al crear la tabla:', error);
+        console.error('❌ Error al verificar/crear la tabla:', error);
     }
 }
 
