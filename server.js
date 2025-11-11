@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 10000;
 
 // Middleware de sesión
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'indreima-seguros-session-2024',
+    secret: process.env.SESSION_SECRET || 'salud-total-indreima-session-2024',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -104,7 +104,7 @@ app.use(express.urlencoded({ extended: true }));
 // 🎨 FUNCIÓN PARA GENERAR HEADER CON LOGO
 // ==============================================
 
-function generateHeader(title = 'Indreima Seguros') {
+function generateHeader(title = 'Salud Total EPS') {
     return `
     <header class="main-header">
         <div class="header-container">
@@ -121,7 +121,7 @@ function generateHeader(title = 'Indreima Seguros') {
 // 🚀 RUTAS DE LA APLICACIÓN
 // ==============================================
 
-// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN
+// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN SALUD TOTAL EPS
 app.get('/', (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -129,23 +129,24 @@ app.get('/', (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Indreima Seguros - Sistema de Afiliación</title>
+        <title>Salud Total EPS - Sistema de Afiliación</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
             :root {
-                --primary-dark: #1a1a1a;
+                --primary-blue: #0055A4;
+                --primary-green: #00A859;
                 --primary-gold: #d4af37;
-                --primary-blue: #2563eb;
-                --light-bg: #f8fafc;
+                --primary-dark: #1a1a1a;
+                --light-bg: #f0f7ff;
                 --white: #ffffff;
                 --gray-light: #f1f5f9;
                 --gray: #64748b;
                 --dark: #1e293b;
                 --border-radius: 12px;
                 --border-radius-lg: 20px;
-                --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-                --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+                --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
                 --transition: all 0.3s ease;
             }
 
@@ -206,7 +207,7 @@ app.get('/', (req, res) => {
             .page-title {
                 font-size: 1.5rem;
                 font-weight: 600;
-                color: var(--primary-dark);
+                color: var(--primary-blue);
             }
 
             /* CONTAINER PRINCIPAL */
@@ -220,19 +221,17 @@ app.get('/', (req, res) => {
                 text-align: center;
                 margin-bottom: 3rem;
                 padding: 3rem 2rem;
-                background: linear-gradient(135deg, var(--white) 0%, var(--gray-light) 100%);
+                background: linear-gradient(135deg, var(--white) 0%, var(--light-bg) 100%);
                 border-radius: var(--border-radius-lg);
                 box-shadow: var(--shadow);
+                border-left: 4px solid var(--primary-green);
             }
 
             .hero-title {
                 font-size: 2.5rem;
                 font-weight: 700;
-                color: var(--primary-dark);
+                color: var(--primary-blue);
                 margin-bottom: 1rem;
-                background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
             }
 
             .hero-subtitle {
@@ -242,6 +241,17 @@ app.get('/', (req, res) => {
                 margin: 0 auto;
             }
 
+            .eps-badge {
+                display: inline-block;
+                background: var(--primary-green);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                margin-top: 1rem;
+            }
+
             /* FORMULARIO */
             .form-container {
                 background: var(--white);
@@ -249,6 +259,7 @@ app.get('/', (req, res) => {
                 box-shadow: var(--shadow-lg);
                 padding: 3rem;
                 margin-bottom: 2rem;
+                border-top: 4px solid var(--primary-blue);
             }
 
             .form-header {
@@ -259,7 +270,7 @@ app.get('/', (req, res) => {
             .form-icon {
                 width: 80px;
                 height: 80px;
-                background: linear-gradient(135deg, var(--primary-gold), var(--primary-blue));
+                background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -272,7 +283,7 @@ app.get('/', (req, res) => {
             .form-title {
                 font-size: 1.8rem;
                 font-weight: 700;
-                color: var(--primary-dark);
+                color: var(--primary-blue);
                 margin-bottom: 0.5rem;
             }
 
@@ -340,7 +351,7 @@ app.get('/', (req, res) => {
                 outline: none;
                 border-color: var(--primary-blue);
                 background: var(--white);
-                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
             }
 
             .form-input:focus + .input-icon {
@@ -349,7 +360,7 @@ app.get('/', (req, res) => {
 
             /* CHECKBOX TRATAMIENTO DE DATOS */
             .checkbox-group {
-                background: var(--gray-light);
+                background: var(--light-bg);
                 padding: 1.5rem;
                 border-radius: var(--border-radius);
                 border: 2px solid #e2e8f0;
@@ -395,7 +406,7 @@ app.get('/', (req, res) => {
             .submit-btn {
                 width: 100%;
                 padding: 1.2rem;
-                background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+                background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
                 color: var(--white);
                 border: none;
                 border-radius: var(--border-radius);
@@ -411,7 +422,7 @@ app.get('/', (req, res) => {
 
             .submit-btn:hover:not(:disabled) {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+                box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
             }
 
             .submit-btn:disabled {
@@ -450,7 +461,7 @@ app.get('/', (req, res) => {
 
             /* FOOTER */
             .main-footer {
-                background: var(--primary-dark);
+                background: var(--primary-blue);
                 color: var(--white);
                 text-align: center;
                 padding: 2rem;
@@ -460,6 +471,13 @@ app.get('/', (req, res) => {
             .footer-content {
                 max-width: 1200px;
                 margin: 0 auto;
+            }
+
+            .partner-info {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: var(--border-radius);
+                margin: 1rem 0;
             }
 
             .admin-link {
@@ -506,17 +524,21 @@ app.get('/', (req, res) => {
 
         <div class="main-container">
             <div class="hero-section">
-                <h1 class="hero-title">Protección y Seguridad para tu Futuro</h1>
-                <p class="hero-subtitle">Únete a Indreima Seguros y accede a nuestra amplia gama de servicios de protección y asesoría personalizada.</p>
+                <h1 class="hero-title">Salud Total EPS</h1>
+                <p class="hero-subtitle">Más de 25 años cuidando la salud de los colombianos. Afíliate a la EPS con cobertura nacional y servicios de calidad.</p>
+                <div class="eps-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    EPS Oficial - Régimen Contributivo
+                </div>
             </div>
 
             <div class="form-container">
                 <div class="form-header">
                     <div class="form-icon">
-                        <i class="fas fa-user-shield"></i>
+                        <i class="fas fa-file-medical"></i>
                     </div>
                     <h2 class="form-title">Formulario de Afiliación</h2>
-                    <p class="form-subtitle">Complete sus datos para iniciar el proceso de afiliación</p>
+                    <p class="form-subtitle">Registro oficial en el Sistema General de Seguridad Social en Salud</p>
                 </div>
 
                 <form id="affiliate-form">
@@ -597,9 +619,10 @@ app.get('/', (req, res) => {
                             <input type="checkbox" class="checkbox-input" id="tratamiento_datos" name="tratamiento_datos" required>
                             <label for="tratamiento_datos" class="checkbox-label">
                                 <span class="required-checkbox">*</span> 
-                                <strong>AUTORIZO el tratamiento de mis datos personales</strong> conforme a la 
-                                política de protección de datos y la Ley 1581 de 2012. Entiendo que esta autorización es 
-                                <strong>requisito indispensable</strong> para el proceso de afiliación.
+                                <strong>AUTORIZO OBLIGATORIAMENTE</strong> el tratamiento de mis datos personales conforme a la 
+                                <a href="#" id="openPrivacyPolicy">Política de Tratamiento de Datos</a> 
+                                y la Ley 1581 de 2012. Entiendo que esta autorización es <strong>requisito indispensable</strong> 
+                                para el proceso de afiliación al Sistema General de Seguridad Social en Salud.
                             </label>
                         </div>
                     </div>
@@ -616,8 +639,11 @@ app.get('/', (req, res) => {
 
         <footer class="main-footer">
             <div class="footer-content">
-                <p>&copy; 2024 Indreima Seguros. Todos los derechos reservados.</p>
-                <p>Protegiendo tu futuro con confianza y seguridad.</p>
+                <p>&copy; 2024 Salud Total EPS. Todos los derechos reservados.</p>
+                <div class="partner-info">
+                    <p><strong>Aliado estratégico:</strong> Indreima Seguros</p>
+                    <p>Protegiendo tu salud con el respaldo de Indreima Seguros</p>
+                </div>
                 <a href="/admin/login" class="admin-link">
                     <i class="fas fa-lock"></i>
                     Acceso Administrativo
@@ -627,6 +653,12 @@ app.get('/', (req, res) => {
 
         <script>
             const API_URL = '/api/formulario/solicitud';
+
+            // Modal de política de privacidad (simplificado)
+            document.getElementById('openPrivacyPolicy')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Política de Tratamiento de Datos: Sus datos serán utilizados exclusivamente para el proceso de afiliación al Sistema de Salud y protegidos conforme a la Ley 1581 de 2012.');
+            });
 
             function validateForm(formData) {
                 const errors = [];
@@ -647,7 +679,7 @@ app.get('/', (req, res) => {
                 }
                 
                 if (!formData.tratamiento_datos) {
-                    errors.push('Debe autorizar el tratamiento de datos personales para continuar');
+                    errors.push('Debe autorizar OBLIGATORIAMENTE el tratamiento de datos personales para continuar con la afiliación al Sistema de Salud');
                 }
                 
                 return errors;
@@ -742,7 +774,8 @@ app.get('/', (req, res) => {
 
             document.getElementById('fecha_nacimiento').max = new Date().toISOString().split('T')[0];
 
-            console.log('🛡️ Indreima Seguros - Sistema de Afiliaciones');
+            console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
+            console.log('🛡️  Aliado estratégico: Indreima Seguros');
         </script>
     </body>
     </html>`;
@@ -750,7 +783,7 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
-// ✅ RUTA DE LOGIN
+// ✅ RUTA DE LOGIN (manteniendo el resto del código similar pero con títulos corregidos)
 app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -758,7 +791,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Acceso Administrativo - Indreima Seguros</title>
+        <title>Acceso Administrativo - Salud Total EPS</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             * {
@@ -769,7 +802,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             }
             
             body {
-                background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+                background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
@@ -831,7 +864,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             }
             
             .login-header {
-                background: linear-gradient(135deg, #1a1a1a, #2d3748);
+                background: linear-gradient(135deg, #0055A4, #003366);
                 color: white;
                 padding: 3rem 2rem;
                 text-align: center;
@@ -852,8 +885,8 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             }
             
             .security-notice {
-                background: #f0f9ff;
-                border: 1px solid #2563eb;
+                background: #f0f7ff;
+                border: 1px solid #0055A4;
                 border-radius: 12px;
                 padding: 1.5rem;
                 margin-bottom: 2rem;
@@ -861,14 +894,14 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             }
             
             .security-notice i {
-                color: #2563eb;
+                color: #0055A4;
                 font-size: 1.5rem;
                 margin-bottom: 0.5rem;
                 display: block;
             }
             
             .security-notice p {
-                color: #2563eb;
+                color: #0055A4;
                 font-size: 0.9rem;
                 font-weight: 600;
             }
@@ -909,15 +942,15 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             
             .form-input:focus {
                 outline: none;
-                border-color: #2563eb;
+                border-color: #0055A4;
                 background: white;
-                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
             }
             
             .login-btn {
                 width: 100%;
                 padding: 1.2rem;
-                background: linear-gradient(135deg, #1a1a1a, #2d3748);
+                background: linear-gradient(135deg, #0055A4, #003366);
                 color: white;
                 border: none;
                 border-radius: 12px;
@@ -933,7 +966,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             
             .login-btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+                box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
             }
             
             .login-btn:active {
@@ -979,7 +1012,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.5rem;
-                color: #2563eb;
+                color: #0055A4;
                 text-decoration: none;
                 font-weight: 600;
                 margin-top: 1rem;
@@ -997,7 +1030,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
         <div class="login-container">
             <div class="login-header">
                 <h1><i class="fas fa-shield-alt"></i> Acceso Administrativo</h1>
-                <p>Indreima Seguros - Sistema de Afiliaciones</p>
+                <p>Salud Total EPS - Sistema de Afiliaciones</p>
             </div>
             
             <div class="login-body">
@@ -1105,8 +1138,8 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
 app.post('/admin/auth/login', (req, res) => {
     const { username, password } = req.body;
     
-    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin_indreima';
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Indreima2024!';
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin_saludtotal';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SaludTotal2024!';
     
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         req.session.isAuthenticated = true;
@@ -1154,7 +1187,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         if (!formData.tratamiento_datos) {
             return res.status(400).json({
                 success: false,
-                message: '❌ Debe autorizar el tratamiento de datos personales para continuar con la afiliación'
+                message: '❌ Debe autorizar OBLIGATORIAMENTE el tratamiento de datos personales para continuar con la afiliación al Sistema de Salud'
             });
         }
         
@@ -1173,7 +1206,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
                 formData.lugar_nacimiento,
                 formData.correo,
                 formData.tratamiento_datos,
-                'IND-' + Date.now()
+                'ST-' + Date.now()
             ]
         );
 
@@ -1181,7 +1214,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         
         res.json({
             success: true,
-            message: '✅ Afiliación registrada exitosamente en Indreima Seguros',
+            message: '✅ Afiliación registrada exitosamente en Salud Total EPS',
             data: result.rows[0],
             affiliateId: result.rows[0].affiliate_id,
             tratamientoDatos: result.rows[0].tratamiento_datos,
@@ -1284,7 +1317,7 @@ app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
         const ws = XLSX.utils.json_to_sheet(excelData);
         XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
 
-        const fileName = \`afiliados_indreima_\${new Date().toISOString().split('T')[0]}.xlsx\`;
+        const fileName = \`afiliados_salud_total_\${new Date().toISOString().split('T')[0]}.xlsx\`;
         
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', \`attachment; filename="\${fileName}"\`);
@@ -1316,7 +1349,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Panel de Administración - Indreima Seguros</title>
+            <title>Panel de Administración - Salud Total EPS</title>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
                 * {
@@ -1327,7 +1360,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 body {
-                    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+                    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
                     min-height: 100vh;
                     padding: 0;
                     color: #1a1a1a;
@@ -1400,12 +1433,12 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .security-badge {
-                    background: #f0f9ff;
-                    color: #0369a1;
+                    background: #f0f7ff;
+                    color: #0055A4;
                     padding: 0.5rem 1rem;
                     border-radius: 8px;
                     font-size: 0.8rem;
-                    border: 1px solid #bae6fd;
+                    border: 1px solid #bfdbfe;
                 }
 
                 /* CONTENIDO PRINCIPAL */
@@ -1416,7 +1449,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .admin-header {
-                    background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+                    background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
                     color: white;
                     padding: 3rem 2rem;
                     text-align: center;
@@ -1432,6 +1465,14 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 .admin-header p {
                     opacity: 0.9;
                     font-size: 1.1rem;
+                }
+                
+                .partner-notice {
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-top: 1rem;
+                    font-size: 0.9rem;
                 }
                 
                 .stats-container {
@@ -1451,7 +1492,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     border-radius: 16px;
                     text-align: center;
                     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                    border-left: 4px solid #d4af37;
+                    border-left: 4px solid #0055A4;
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
                     cursor: pointer;
                 }
@@ -1462,15 +1503,15 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .stat-card.excel {
-                    background: linear-gradient(135deg, #059669, #047857);
+                    background: linear-gradient(135deg, #00A859, #008046);
                     color: white;
-                    border-left: 4px solid #10b981;
+                    border-left: 4px solid #00A859;
                 }
                 
                 .stat-number {
                     font-size: 2.5rem;
                     font-weight: bold;
-                    color: #1a1a1a;
+                    color: #0055A4;
                     margin-bottom: 0.5rem;
                 }
                 
@@ -1505,7 +1546,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 th {
-                    background: #1a1a1a;
+                    background: #0055A4;
                     color: white;
                     padding: 1.2rem;
                     text-align: left;
@@ -1520,7 +1561,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 tr:hover {
-                    background: #f8fafc;
+                    background: #f0f7ff;
                 }
                 
                 .badge {
@@ -1577,7 +1618,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 .empty-state i {
                     font-size: 3rem;
                     margin-bottom: 1rem;
-                    color: #d4af37;
+                    color: #0055A4;
                 }
                 
                 .download-section {
@@ -1590,7 +1631,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .download-btn {
-                    background: linear-gradient(135deg, #059669, #047857);
+                    background: linear-gradient(135deg, #00A859, #008046);
                     color: white;
                     border: none;
                     padding: 1rem 2rem;
@@ -1607,7 +1648,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 
                 .download-btn:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+                    box-shadow: 0 8px 20px rgba(0, 168, 89, 0.3);
                 }
                 
                 .download-info {
@@ -1634,7 +1675,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .notification.success {
-                    background: #059669;
+                    background: #00A859;
                 }
                 
                 .notification.error {
@@ -1682,8 +1723,12 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 </div>
                 
                 <div class="admin-header">
-                    <h1>🏢 Panel de Administración</h1>
-                    <p>Indreima Seguros - Sistema de Afiliaciones</p>
+                    <h1>🏥 Panel de Administración</h1>
+                    <p>Salud Total EPS - Sistema de Afiliaciones</p>
+                    <div class="partner-notice">
+                        <i class="fas fa-handshake"></i>
+                        Aliado estratégico: <strong>Indreima Seguros</strong>
+                    </div>
                 </div>
                 
                 <div class="stats-container">
@@ -1711,7 +1756,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                         <i class="fas fa-database"></i>
                         <h2>No hay afiliados registrados</h2>
                         <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
-                        <p style="margin-top: 20px; font-size: 0.9rem; color: #d4af37;">
+                        <p style="margin-top: 20px; font-size: 0.9rem; color: #0055A4;">
                             <i class="fas fa-info-circle"></i>
                             ¡El sistema está listo! Los afiliados aparecerán aquí.
                         </p>
@@ -1857,10 +1902,14 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
-        message: '🛡️ Indreima Seguros - Sistema funcionando correctamente',
+        message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
         status: 'operational',
+        partnership: {
+            aseguradora: 'Indreima Seguros',
+            eps: 'Salud Total EPS'
+        },
         security: {
             authentication: true,
             sessionManagement: true,
@@ -1882,13 +1931,13 @@ app.get('/api/health', (req, res) => {
 // ==============================================
 
 app.listen(PORT, () => {
-    console.log(\`🎉 Servidor Indreima Seguros ejecutándose en puerto \${PORT}\`);
+    console.log(\`🎉 Servidor Salud Total EPS ejecutándose en puerto \${PORT}\`);
     console.log(\`📱 Formulario: http://localhost:\${PORT}\`);
     console.log(\`🔐 Login Admin: http://localhost:\${PORT}/admin/login\`);
     console.log(\`📊 Panel Admin: http://localhost:\${PORT}/admin/afiliados\`);
     console.log(\`🔍 Health Check: http://localhost:\${PORT}/api/health\`);
     console.log(\`🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO\`);
-    console.log(\`🏢 Identidad: Indreima Seguros\`);
+    console.log(\`🏢 Aliado estratégico: Indreima Seguros\`);
     
     createTableIfNotExists();
 });
