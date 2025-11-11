@@ -192,7 +192,6 @@ app.get('/', (req, res) => {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                animation: slideDown 0.5s ease-out;
             }
 
             .logo-section {
@@ -266,7 +265,6 @@ app.get('/', (req, res) => {
                 box-shadow: var(--shadow-lg);
                 position: relative;
                 overflow: hidden;
-                animation: fadeInUp 0.8s ease-out;
             }
 
             .hero-section::before {
@@ -287,7 +285,6 @@ app.get('/', (req, res) => {
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
                 margin-bottom: 1rem;
-                animation: fadeInUp 0.8s ease-out 0.2s both;
             }
 
             .hero-subtitle {
@@ -295,7 +292,6 @@ app.get('/', (req, res) => {
                 color: var(--gray);
                 max-width: 600px;
                 margin: 0 auto 2rem;
-                animation: fadeInUp 0.8s ease-out 0.4s both;
             }
 
             .hero-features {
@@ -303,7 +299,6 @@ app.get('/', (req, res) => {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: 1.5rem;
                 margin-top: 2rem;
-                animation: fadeInUp 0.8s ease-out 0.6s both;
             }
 
             .feature-card {
@@ -341,7 +336,6 @@ app.get('/', (req, res) => {
                 margin-bottom: 2rem;
                 position: relative;
                 overflow: hidden;
-                animation: fadeInUp 0.8s ease-out 0.8s both;
             }
 
             .form-container::before {
@@ -370,7 +364,6 @@ app.get('/', (req, res) => {
                 margin: 0 auto 1.5rem;
                 color: var(--white);
                 font-size: 2rem;
-                animation: bounceIn 1s ease-out;
             }
 
             .form-title {
@@ -397,7 +390,6 @@ app.get('/', (req, res) => {
 
             .form-group {
                 position: relative;
-                animation: fadeIn 0.6s ease-out;
             }
 
             .form-group.full-width {
@@ -531,24 +523,9 @@ app.get('/', (req, res) => {
                 overflow: hidden;
             }
 
-            .submit-btn::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-                transition: 0.5s;
-            }
-
             .submit-btn:hover:not(:disabled) {
                 transform: translateY(-3px);
                 box-shadow: 0 12px 30px rgba(0, 85, 164, 0.4);
-            }
-
-            .submit-btn:hover:not(:disabled)::before {
-                left: 100%;
             }
 
             .submit-btn:disabled {
@@ -564,7 +541,6 @@ app.get('/', (req, res) => {
                 text-align: center;
                 display: none;
                 font-weight: 600;
-                animation: slideInDown 0.5s ease-out;
             }
 
             .success {
@@ -725,61 +701,24 @@ app.get('/', (req, res) => {
             @media (max-width: 480px) {
                 .hero-section {
                     padding: 2rem 1rem;
-                margin-bottom: 2rem;
-                margin-top: 1rem;
-                border-radius: 16px;
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-                background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-                position: relative;
-                overflow: hidden;
-                border: 1px solid #e2e8f0;
-                text-align: center;
-                animation: fadeInUp 0.8s ease-out;
-                min-height: auto;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
+                    margin-bottom: 2rem;
+                }
 
                 .hero-title {
                     font-size: 1.8rem;
-                    font-weight: 800;
-                    background: linear-gradient(135deg, #0055A4 0%, #00A859 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    margin-bottom: 0.8rem;
-                    line-height: 1.2;
-                    text-align: center;
-                    padding: 0 0.5rem;
                 }
 
                 .hero-subtitle {
                     font-size: 1rem;
-                    color: #64748b;
-                    line-height: 1.5;
-                    margin-bottom: 1.5rem;
-                    text-align: center;
-                    padding: 0 0.5rem;
-                    max-width: 100%;
                 }
 
                 .hero-features {
                     grid-template-columns: 1fr;
                     gap: 1rem;
-                    width: 100%;
-                    max-width: 300px;
-                    margin: 1rem auto 0;
                 }
 
                 .feature-card {
                     padding: 1.2rem;
-                    border-radius: 12px;
-                    background: rgba(255, 255, 255, 0.8);
-                    backdrop-filter: blur(10px);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
                 }
 
                 .feature-icon {
@@ -789,18 +728,11 @@ app.get('/', (req, res) => {
                 }
 
                 .form-container {
-                    margin: 0;
-                    border-radius: 16px 16px 0 0;
                     padding: 1.5rem 1rem;
-                    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-                    background: #ffffff;
-                    border: 1px solid #e2e8f0;
-                    border-bottom: none;
                 }
 
                 .form-title {
                     font-size: 1.5rem;
-                    margin-bottom: 0.5rem;
                 }
 
                 .form-subtitle {
@@ -809,7 +741,7 @@ app.get('/', (req, res) => {
 
                 .form-input {
                     padding: 1rem 1rem 1rem 2.8rem;
-                    font-size: 16px; /* Previene zoom en iOS */
+                    font-size: 16px;
                 }
 
                 .checkbox-group {
@@ -830,7 +762,6 @@ app.get('/', (req, res) => {
                 .main-footer {
                     padding: 2rem 1rem;
                     margin-top: 2rem;
-                    border-radius: 16px 16px 0 0;
                 }
 
                 .partner-info {
@@ -1120,26 +1051,6 @@ app.get('/', (req, res) => {
 
             document.getElementById('fecha_nacimiento').max = new Date().toISOString().split('T')[0];
 
-            // Animaciones al hacer scroll
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
-                    }
-                });
-            }, observerOptions);
-
-            document.querySelectorAll('.form-group').forEach((el, index) => {
-                el.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s both`;
-                el.style.animationPlayState = 'paused';
-                observer.observe(el);
-            });
-
             console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
             console.log('🛡️  Aliado estratégico: Indreima Seguros');
             console.log('🎨 Diseño mejorado con animaciones');
@@ -1149,8 +1060,6 @@ app.get('/', (req, res) => {
     
     res.send(html);
 });
-
-// [Las demás rutas (login, admin, APIs) permanecen igual que en tu código original...]
 
 // ✅ RUTA DE LOGIN (MEJORADA)
 app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
@@ -1267,7 +1176,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 max-width: 450px;
                 margin-top: 2rem;
                 color: var(--dark);
-                animation: fadeInUp 0.8s ease-out;
                 backdrop-filter: blur(10px);
             }
             
@@ -1278,17 +1186,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 text-align: center;
                 position: relative;
                 overflow: hidden;
-            }
-            
-            .login-header::before {
-                content: '';
-                position: absolute;
-                top: -50%;
-                left: -50%;
-                width: 200%;
-                height: 200%;
-                background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-                animation: shine 3s infinite;
             }
             
             .login-header h1 {
@@ -1314,7 +1211,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 padding: 1.5rem;
                 margin-bottom: 2rem;
                 text-align: center;
-                animation: fadeIn 0.6s ease-out 0.3s both;
             }
             
             .security-notice i {
@@ -1332,7 +1228,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             
             .form-group {
                 margin-bottom: 1.5rem;
-                animation: fadeIn 0.6s ease-out 0.4s both;
             }
             
             .form-label {
@@ -1398,24 +1293,9 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 overflow: hidden;
             }
             
-            .login-btn::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-                transition: 0.5s;
-            }
-            
             .login-btn:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
-            }
-            
-            .login-btn:hover::before {
-                left: 100%;
             }
             
             .error-message {
@@ -1427,7 +1307,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 text-align: center;
                 display: none;
                 border: 1px solid #fecaca;
-                animation: slideInDown 0.5s ease-out;
             }
             
             .error-message.show {
@@ -1439,7 +1318,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 margin-top: 2rem;
                 padding-top: 2rem;
                 border-top: 1px solid #e5e7eb;
-                animation: fadeIn 0.6s ease-out 0.5s both;
             }
             
             .footer-info p {
@@ -1467,46 +1345,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 background: var(--primary-blue);
                 color: white;
                 transform: translateY(-2px);
-            }
-
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
-                to {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideInDown {
-                from {
-                    opacity: 0;
-                    transform: translateY(-10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            @keyframes shine {
-                0% {
-                    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-                }
-                100% {
-                    transform: translateX(100%) translateY(100%) rotate(45deg);
-                }
             }
 
             @keyframes shake {
@@ -1643,8 +1481,6 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     
     res.send(html);
 });
-
-// [El resto de las rutas (APIs, admin panel, etc.) permanecen igual que en tu código original]
 
 // ✅ RUTA PARA PROCESAR LOGIN
 app.post('/admin/auth/login', (req, res) => {
@@ -2005,18 +1841,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     margin-bottom: 2rem;
                     position: relative;
                     overflow: hidden;
-                    animation: fadeInUp 0.8s ease-out;
-                }
-                
-                .admin-header::before {
-                    content: '';
-                    position: absolute;
-                    top: -50%;
-                    left: -50%;
-                    width: 200%;
-                    height: 200%;
-                    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-                    animation: shine 3s infinite;
                 }
                 
                 .admin-header h1 {
@@ -2050,7 +1874,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     border-radius: var(--border-radius-lg);
                     box-shadow: var(--shadow);
                     margin-bottom: 2rem;
-                    animation: fadeInUp 0.8s ease-out 0.2s both;
                 }
                 
                 .stat-card {
@@ -2066,25 +1889,9 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     overflow: hidden;
                 }
                 
-                .stat-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    height: 4px;
-                    background: var(--gradient-primary);
-                    transform: scaleX(0);
-                    transition: var(--transition);
-                }
-                
                 .stat-card:hover {
                     transform: translateY(-5px);
                     box-shadow: var(--shadow-lg);
-                }
-                
-                .stat-card:hover::before {
-                    transform: scaleX(1);
                 }
                 
                 .stat-card.excel {
@@ -2119,7 +1926,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 .data-table {
                     padding: 0 0 2rem 0;
                     overflow-x: auto;
-                    animation: fadeInUp 0.8s ease-out 0.4s both;
                 }
                 
                 table {
@@ -2204,7 +2010,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     text-align: center;
                     padding: 4rem 2rem;
                     color: var(--gray);
-                    animation: fadeIn 0.8s ease-out;
                 }
                 
                 .empty-state i {
@@ -2220,7 +2025,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     border-radius: var(--border-radius-lg);
                     box-shadow: var(--shadow);
                     margin-top: 2rem;
-                    animation: fadeInUp 0.8s ease-out 0.6s both;
                 }
                 
                 .download-btn {
@@ -2241,24 +2045,9 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     overflow: hidden;
                 }
                 
-                .download-btn::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: -100%;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-                    transition: 0.5s;
-                }
-                
                 .download-btn:hover {
                     transform: translateY(-3px);
                     box-shadow: 0 12px 30px rgba(0, 85, 164, 0.4);
-                }
-                
-                .download-btn:hover::before {
-                    left: 100%;
                 }
                 
                 .download-info {
@@ -2276,13 +2065,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     color: white;
                     font-weight: 600;
                     z-index: 1001;
-                    animation: slideInRight 0.3s ease;
                     box-shadow: var(--shadow-lg);
-                }
-                
-                @keyframes slideInRight {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
                 }
                 
                 .notification.success {
@@ -2291,35 +2074,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 
                 .notification.error {
                     background: #dc2626;
-                }
-
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-
-                @keyframes shine {
-                    0% {
-                        transform: translateX(-100%) translateY(-100%) rotate(45deg);
-                    }
-                    100% {
-                        transform: translateX(100%) translateY(100%) rotate(45deg);
-                    }
                 }
                 
                 @media (max-width: 768px) {
