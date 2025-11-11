@@ -201,8 +201,8 @@ app.get('/', (req, res) => {
             }
 
             .logo-image {
-                width: 150px;
-                height: 80px;
+                width: 220px;
+                height: 100px;
                 border-radius: 12px;
                 overflow: hidden;
                 box-shadow: var(--shadow);
@@ -2348,6 +2348,7 @@ process.on('SIGINT', () => {
     console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
+
 
 
 
