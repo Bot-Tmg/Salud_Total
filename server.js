@@ -101,7 +101,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ==============================================
-// 🎨 FUNCIÓN PARA GENERAR HEADER CON LOGO
+// 🎨 FUNCIÓN PARA GENERAR HEADER CON LOGO EXACTO
 // ==============================================
 
 function generateHeader(title) {
@@ -110,7 +110,7 @@ function generateHeader(title) {
         <div class="header-container">
             <div class="logo-section">
                 <div class="logo">Indreima</div>
-                <div class="logo-subtitle">seguros</div>
+                <div class="logo-subtitle">s e g u r o s</div>
             </div>
             <h1 class="page-title">${title}</h1>
         </div>
@@ -164,6 +164,7 @@ app.get('/', (req, res) => {
                 line-height: 1.6;
             }
 
+            /* HEADER ESTILOS ACTUALIZADOS */
             .main-header {
                 background: var(--white);
                 border-bottom: 3px solid var(--primary-gold);
@@ -199,8 +200,8 @@ app.get('/', (req, res) => {
                 font-size: 0.9rem;
                 font-weight: 500;
                 color: var(--primary-gold);
-                text-transform: uppercase;
-                letter-spacing: 2px;
+                text-transform: lowercase;
+                letter-spacing: 4px;
             }
 
             .page-title {
@@ -774,6 +775,8 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
+// [El resto del código permanece igual...]
+
 // ✅ RUTA DE LOGIN
 app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     const html = `
@@ -839,8 +842,8 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 font-size: 0.9rem;
                 font-weight: 500;
                 color: #d4af37;
-                text-transform: uppercase;
-                letter-spacing: 2px;
+                text-transform: lowercase;
+                letter-spacing: 4px;
             }
 
             .login-container {
@@ -1125,6 +1128,8 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     res.send(html);
 });
 
+// [El resto del código del servidor permanece igual...]
+
 // ✅ RUTA PARA PROCESAR LOGIN
 app.post('/admin/auth/login', (req, res) => {
     const { username, password } = req.body;
@@ -1389,8 +1394,8 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     font-size: 0.9rem;
                     font-weight: 500;
                     color: #d4af37;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
+                    text-transform: lowercase;
+                    letter-spacing: 4px;
                 }
 
                 .session-info {
