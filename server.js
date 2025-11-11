@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 10000;
 // ==============================================
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'salud-total-indreima-session-2024',
+    secret: process.env.SESSION_SECRET || 'salud-total-andreima-session-2024',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -115,7 +115,7 @@ function generateHeader(title, showLogo = true) {
                 </div>
                 <div class="logo-text">
                     <div class="logo-main">Salud Total</div>
-                    <div class="logo-subtitle">EPS • Indreima Seguros</div>
+                    <div class="logo-subtitle">EPS • Andreima Seguros</div>
                 </div>
             </div>
             ` : ''}
@@ -124,11 +124,35 @@ function generateHeader(title, showLogo = true) {
     </header>`;
 }
 
+function generateTabs(activeTab = 'afiliacion') {
+    return `
+    <nav class="tabs-container">
+        <div class="tabs-nav">
+            <a href="/" class="tab ${activeTab === 'afiliacion' ? 'active' : ''}">
+                <i class="fas fa-file-medical"></i>
+                Afiliación
+            </a>
+            <a href="/nosotros" class="tab ${activeTab === 'nosotros' ? 'active' : ''}">
+                <i class="fas fa-info-circle"></i>
+                Nosotros
+            </a>
+            <a href="/cobertura" class="tab ${activeTab === 'cobertura' ? 'active' : ''}">
+                <i class="fas fa-network-wired"></i>
+                Cobertura
+            </a>
+            <a href="/contacto" class="tab ${activeTab === 'contacto' ? 'active' : ''}">
+                <i class="fas fa-phone"></i>
+                Contacto
+            </a>
+        </div>
+    </nav>`;
+}
+
 // ==============================================
 // 🚀 RUTAS DE LA APLICACIÓN
 // ==============================================
 
-// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN MEJORADO
+// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN
 app.get('/', (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -181,6 +205,7 @@ app.get('/', (req, res) => {
                 box-shadow: var(--shadow);
                 position: fixed;
                 top: 0;
+                width: 100%;
                 z-index: 1000;
                 backdrop-filter: blur(10px);
             }
@@ -249,9 +274,50 @@ app.get('/', (req, res) => {
                 background-clip: text;
             }
 
-            .main-container {
+            /* TABS NAVIGATION */
+            .tabs-container {
+                background: var(--white);
+                border-bottom: 2px solid var(--gray-light);
+                position: fixed;
+                top: 120px;
+                width: 100%;
+                z-index: 999;
+                box-shadow: var(--shadow);
+            }
+
+            .tabs-nav {
                 max-width: 1200px;
                 margin: 0 auto;
+                display: flex;
+                padding: 0 2rem;
+            }
+
+            .tab {
+                padding: 1.2rem 2rem;
+                text-decoration: none;
+                color: var(--gray);
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                border-bottom: 3px solid transparent;
+            }
+
+            .tab:hover {
+                color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .tab.active {
+                color: var(--primary-blue);
+                border-bottom-color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .main-container {
+                max-width: 1200px;
+                margin: 180px auto 0;
                 padding: 2rem;
             }
 
@@ -677,12 +743,28 @@ app.get('/', (req, res) => {
                     justify-content: center;
                 }
 
-                .form-grid {
-                    grid-template-columns: 1fr;
+                .tabs-container {
+                    top: 160px;
+                }
+
+                .tabs-nav {
+                    padding: 0 1rem;
+                    overflow-x: auto;
+                }
+
+                .tab {
+                    padding: 1rem 1.2rem;
+                    font-size: 0.9rem;
+                    white-space: nowrap;
                 }
 
                 .main-container {
+                    margin-top: 200px;
                     padding: 1rem;
+                }
+
+                .form-grid {
+                    grid-template-columns: 1fr;
                 }
 
                 .form-container {
@@ -779,6 +861,7 @@ app.get('/', (req, res) => {
     </head>
     <body>
         ${generateHeader('Sistema de Afiliación Digital')}
+        ${generateTabs('afiliacion')}
 
         <div class="main-container">
             <div class="hero-section">
@@ -919,8 +1002,8 @@ app.get('/', (req, res) => {
             <div class="footer-content">
                 <p>&copy; 2024 Salud Total EPS. Todos los derechos reservados.</p>
                 <div class="partner-info">
-                    <p><strong>Aliado estratégico:</strong> Indreima Seguros</p>
-                    <p>Protegiendo tu salud con el respaldo de Indreima Seguros</p>
+                    <p><strong>Aliado estratégico:</strong> Andreima Seguros</p>
+                    <p>Protegiendo tu salud con el respaldo de Andreima Seguros</p>
                 </div>
                 <a href="/admin/login" class="admin-link">
                     <i class="fas fa-lock"></i>
@@ -1052,9 +1135,1692 @@ app.get('/', (req, res) => {
             document.getElementById('fecha_nacimiento').max = new Date().toISOString().split('T')[0];
 
             console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
-            console.log('🛡️  Aliado estratégico: Indreima Seguros');
-            console.log('🎨 Diseño mejorado con animaciones');
+            console.log('🛡️  Aliado estratégico: Andreima Seguros');
+            console.log('🎨 Diseño mejorado con pestañas estáticas');
         </script>
+    </body>
+    </html>`;
+    
+    res.send(html);
+});
+
+// ✅ RUTA NOSOTROS
+app.get('/nosotros', (req, res) => {
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nosotros - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            /* Estilos base desde la página principal */
+            :root {
+                --primary-blue: #0055A4;
+                --primary-green: #00A859;
+                --primary-gold: #d4af37;
+                --primary-dark: #1a1a1a;
+                --light-bg: #f8fafc;
+                --white: #ffffff;
+                --gray-light: #f1f5f9;
+                --gray: #64748b;
+                --dark: #1e293b;
+                --border-radius: 16px;
+                --border-radius-lg: 24px;
+                --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
+                min-height: 100vh;
+                color: var(--dark);
+                line-height: 1.6;
+                overflow-x: hidden;
+            }
+
+            .main-header {
+                background: var(--white);
+                border-bottom: 3px solid var(--primary-gold);
+                box-shadow: var(--shadow);
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+            }
+
+            .header-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 1rem 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-image {
+                width: 250px;
+                height: 80px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                transition: var(--transition);
+            }
+
+            .logo-image:hover {
+                transform: scale(1.05);
+                box-shadow: 0 12px 30px rgba(0, 85, 164, 0.2);
+            }
+
+            .logo-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .logo-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .logo-main {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--primary-blue);
+                letter-spacing: -0.5px;
+            }
+
+            .logo-subtitle {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--primary-green);
+                letter-spacing: 1px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .tabs-container {
+                background: var(--white);
+                border-bottom: 2px solid var(--gray-light);
+                position: fixed;
+                top: 120px;
+                width: 100%;
+                z-index: 999;
+                box-shadow: var(--shadow);
+            }
+
+            .tabs-nav {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                padding: 0 2rem;
+            }
+
+            .tab {
+                padding: 1.2rem 2rem;
+                text-decoration: none;
+                color: var(--gray);
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                border-bottom: 3px solid transparent;
+            }
+
+            .tab:hover {
+                color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .tab.active {
+                color: var(--primary-blue);
+                border-bottom-color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .main-container {
+                max-width: 1200px;
+                margin: 180px auto 0;
+                padding: 2rem;
+            }
+
+            /* Estilos específicos para Nosotros */
+            .about-hero {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                box-shadow: var(--shadow-lg);
+                padding: 4rem;
+                text-align: center;
+                margin-bottom: 3rem;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .about-hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--gradient-primary);
+            }
+
+            .about-title {
+                font-size: 3rem;
+                font-weight: 800;
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 1.5rem;
+            }
+
+            .about-subtitle {
+                font-size: 1.3rem;
+                color: var(--gray);
+                max-width: 800px;
+                margin: 0 auto 2rem;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+                margin: 3rem 0;
+            }
+
+            .stat-card {
+                background: var(--light-bg);
+                padding: 2.5rem;
+                border-radius: var(--border-radius);
+                text-align: center;
+                transition: var(--transition);
+                border-left: 4px solid var(--primary-blue);
+            }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow);
+            }
+
+            .stat-number {
+                font-size: 3rem;
+                font-weight: 800;
+                color: var(--primary-blue);
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-label {
+                color: var(--gray);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .values-section {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                box-shadow: var(--shadow-lg);
+                padding: 4rem;
+                margin: 3rem 0;
+            }
+
+            .values-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 2rem;
+                margin-top: 2rem;
+            }
+
+            .value-card {
+                text-align: center;
+                padding: 2rem;
+                background: var(--light-bg);
+                border-radius: var(--border-radius);
+                transition: var(--transition);
+            }
+
+            .value-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow);
+            }
+
+            .value-icon {
+                width: 80px;
+                height: 80px;
+                background: var(--gradient-primary);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.5rem;
+                color: var(--white);
+                font-size: 2rem;
+            }
+
+            .value-title {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                margin-bottom: 1rem;
+            }
+
+            .value-description {
+                color: var(--gray);
+                line-height: 1.6;
+            }
+
+            .partnership-section {
+                background: var(--gradient-primary);
+                color: var(--white);
+                padding: 4rem;
+                border-radius: var(--border-radius-lg);
+                text-align: center;
+                margin: 3rem 0;
+            }
+
+            .partnership-title {
+                font-size: 2.5rem;
+                font-weight: 800;
+                margin-bottom: 1rem;
+            }
+
+            .partnership-text {
+                font-size: 1.2rem;
+                opacity: 0.9;
+                max-width: 800px;
+                margin: 0 auto 2rem;
+            }
+
+            .partner-logo {
+                width: 300px;
+                height: 100px;
+                margin: 2rem auto;
+                background: var(--white);
+                border-radius: var(--border-radius);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .partner-logo img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+
+            .main-footer {
+                background: var(--primary-blue);
+                color: var(--white);
+                text-align: center;
+                padding: 3rem 2rem;
+                margin-top: 4rem;
+                position: relative;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .partner-info {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1.5rem;
+                border-radius: var(--border-radius);
+                margin: 1.5rem 0;
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-link {
+                color: var(--primary-gold);
+                text-decoration: none;
+                font-weight: 600;
+                margin-top: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                padding: 0.8rem 1.5rem;
+                border: 2px solid var(--primary-gold);
+                border-radius: var(--border-radius);
+            }
+
+            .admin-link:hover {
+                background: var(--primary-gold);
+                color: var(--primary-blue);
+                transform: translateY(-2px);
+            }
+
+            @media (max-width: 768px) {
+                .header-container {
+                    padding: 1rem;
+                    flex-direction: column;
+                    gap: 1rem;
+                    text-align: center;
+                }
+
+                .logo-section {
+                    justify-content: center;
+                }
+
+                .tabs-container {
+                    top: 160px;
+                }
+
+                .tabs-nav {
+                    padding: 0 1rem;
+                    overflow-x: auto;
+                }
+
+                .tab {
+                    padding: 1rem 1.2rem;
+                    font-size: 0.9rem;
+                    white-space: nowrap;
+                }
+
+                .main-container {
+                    margin-top: 200px;
+                    padding: 1rem;
+                }
+
+                .about-hero, .values-section, .partnership-section {
+                    padding: 2rem 1.5rem;
+                }
+
+                .about-title {
+                    font-size: 2.2rem;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                }
+
+                .values-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .partner-logo {
+                    width: 250px;
+                    height: 80px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        ${generateHeader('Conócenos')}
+        ${generateTabs('nosotros')}
+
+        <div class="main-container">
+            <div class="about-hero">
+                <h1 class="about-title">Salud Total EPS</h1>
+                <p class="about-subtitle">Más de 25 años de experiencia brindando servicios de salud de calidad a los colombianos</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">25+</div>
+                        <div class="stat-label">Años de Experiencia</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2M+</div>
+                        <div class="stat-label">Afiliados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Puntos de Atención</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">32</div>
+                        <div class="stat-label">Departamentos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="values-section">
+                <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2.5rem; color: var(--primary-blue);">Nuestros Valores</h2>
+                
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 class="value-title">Compromiso</h3>
+                        <p class="value-description">Trabajamos con dedicación y pasión para garantizar el bienestar de nuestros afiliados, priorizando siempre su salud y calidad de vida.</p>
+                    </div>
+                    
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="value-title">Seguridad</h3>
+                        <p class="value-description">Implementamos los más altos estándares de seguridad en el manejo de información y en la prestación de servicios de salud.</p>
+                    </div>
+                    
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="value-title">Trabajo en Equipo</h3>
+                        <p class="value-description">Fomentamos la colaboración entre profesionales de la salud, administrativos y afiliados para lograr los mejores resultados.</p>
+                    </div>
+                    
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3 class="value-title">Calidad</h3>
+                        <p class="value-description">Nos esforzamos por superar las expectativas en cada servicio que brindamos, manteniendo estándares de excelencia.</p>
+                    </div>
+                    
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <h3 class="value-title">Solidaridad</h3>
+                        <p class="value-description">Creemos en un sistema de salud inclusivo donde todos los colombianos tengan acceso a servicios médicos de calidad.</p>
+                    </div>
+                    
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 class="value-title">Innovación</h3>
+                        <p class="value-description">Incorporamos tecnología de vanguardia y mejores prácticas para optimizar nuestros procesos y servicios.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="partnership-section">
+                <h2 class="partnership-title">Aliado Estratégico</h2>
+                <p class="partnership-text">Trabajamos de la mano con <strong>Andreima Seguros</strong> para brindar seguridad y confianza en todos nuestros procesos</p>
+                
+                <div class="partner-logo">
+                    <img src="https://andreimaseguros.com//andreimaseguros/app/webroot/img/logooriginal.png" alt="Andreima Seguros">
+                </div>
+                
+                <p class="partnership-text">La experiencia y solidez de Andreima Seguros respaldan nuestra operación, garantizando transparencia y protección para todos nuestros afiliados.</p>
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2024 Salud Total EPS. Todos los derechos reservados.</p>
+                <div class="partner-info">
+                    <p><strong>Aliado estratégico:</strong> Andreima Seguros</p>
+                    <p>Protegiendo tu salud con el respaldo de Andreima Seguros</p>
+                </div>
+                <a href="/admin/login" class="admin-link">
+                    <i class="fas fa-lock"></i>
+                    Acceso Administrativo
+                </a>
+            </div>
+        </footer>
+    </body>
+    </html>`;
+    
+    res.send(html);
+});
+
+// ✅ RUTA COBERTURA
+app.get('/cobertura', (req, res) => {
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cobertura - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            /* Estilos base desde la página principal */
+            :root {
+                --primary-blue: #0055A4;
+                --primary-green: #00A859;
+                --primary-gold: #d4af37;
+                --primary-dark: #1a1a1a;
+                --light-bg: #f8fafc;
+                --white: #ffffff;
+                --gray-light: #f1f5f9;
+                --gray: #64748b;
+                --dark: #1e293b;
+                --border-radius: 16px;
+                --border-radius-lg: 24px;
+                --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
+                min-height: 100vh;
+                color: var(--dark);
+                line-height: 1.6;
+                overflow-x: hidden;
+            }
+
+            .main-header {
+                background: var(--white);
+                border-bottom: 3px solid var(--primary-gold);
+                box-shadow: var(--shadow);
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+            }
+
+            .header-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 1rem 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-image {
+                width: 250px;
+                height: 80px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                transition: var(--transition);
+            }
+
+            .logo-image:hover {
+                transform: scale(1.05);
+                box-shadow: 0 12px 30px rgba(0, 85, 164, 0.2);
+            }
+
+            .logo-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .logo-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .logo-main {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--primary-blue);
+                letter-spacing: -0.5px;
+            }
+
+            .logo-subtitle {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--primary-green);
+                letter-spacing: 1px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .tabs-container {
+                background: var(--white);
+                border-bottom: 2px solid var(--gray-light);
+                position: fixed;
+                top: 120px;
+                width: 100%;
+                z-index: 999;
+                box-shadow: var(--shadow);
+            }
+
+            .tabs-nav {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                padding: 0 2rem;
+            }
+
+            .tab {
+                padding: 1.2rem 2rem;
+                text-decoration: none;
+                color: var(--gray);
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                border-bottom: 3px solid transparent;
+            }
+
+            .tab:hover {
+                color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .tab.active {
+                color: var(--primary-blue);
+                border-bottom-color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .main-container {
+                max-width: 1200px;
+                margin: 180px auto 0;
+                padding: 2rem;
+            }
+
+            /* Estilos específicos para Cobertura */
+            .coverage-hero {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                box-shadow: var(--shadow-lg);
+                padding: 4rem;
+                text-align: center;
+                margin-bottom: 3rem;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .coverage-hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--gradient-primary);
+            }
+
+            .coverage-title {
+                font-size: 3rem;
+                font-weight: 800;
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 1.5rem;
+            }
+
+            .coverage-subtitle {
+                font-size: 1.3rem;
+                color: var(--gray);
+                max-width: 800px;
+                margin: 0 auto 2rem;
+            }
+
+            .coverage-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 2rem;
+                margin: 3rem 0;
+            }
+
+            .coverage-card {
+                background: var(--white);
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+                padding: 2.5rem;
+                transition: var(--transition);
+                border-left: 4px solid var(--primary-blue);
+            }
+
+            .coverage-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .coverage-icon {
+                width: 70px;
+                height: 70px;
+                background: var(--gradient-primary);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+                color: var(--white);
+                font-size: 1.8rem;
+            }
+
+            .coverage-card-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                margin-bottom: 1rem;
+            }
+
+            .coverage-list {
+                list-style: none;
+                padding: 0;
+            }
+
+            .coverage-list li {
+                padding: 0.5rem 0;
+                border-bottom: 1px solid var(--gray-light);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .coverage-list li:last-child {
+                border-bottom: none;
+            }
+
+            .coverage-list i {
+                color: var(--primary-green);
+                font-size: 0.9rem;
+            }
+
+            .national-coverage {
+                background: var(--gradient-primary);
+                color: var(--white);
+                padding: 4rem;
+                border-radius: var(--border-radius-lg);
+                text-align: center;
+                margin: 3rem 0;
+            }
+
+            .national-title {
+                font-size: 2.5rem;
+                font-weight: 800;
+                margin-bottom: 1rem;
+            }
+
+            .national-text {
+                font-size: 1.2rem;
+                opacity: 0.9;
+                max-width: 800px;
+                margin: 0 auto 2rem;
+            }
+
+            .departments-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                margin-top: 2rem;
+            }
+
+            .department {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: var(--border-radius);
+                backdrop-filter: blur(10px);
+                transition: var(--transition);
+            }
+
+            .department:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(1.05);
+            }
+
+            .main-footer {
+                background: var(--primary-blue);
+                color: var(--white);
+                text-align: center;
+                padding: 3rem 2rem;
+                margin-top: 4rem;
+                position: relative;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .partner-info {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1.5rem;
+                border-radius: var(--border-radius);
+                margin: 1.5rem 0;
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-link {
+                color: var(--primary-gold);
+                text-decoration: none;
+                font-weight: 600;
+                margin-top: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                padding: 0.8rem 1.5rem;
+                border: 2px solid var(--primary-gold);
+                border-radius: var(--border-radius);
+            }
+
+            .admin-link:hover {
+                background: var(--primary-gold);
+                color: var(--primary-blue);
+                transform: translateY(-2px);
+            }
+
+            @media (max-width: 768px) {
+                .header-container {
+                    padding: 1rem;
+                    flex-direction: column;
+                    gap: 1rem;
+                    text-align: center;
+                }
+
+                .logo-section {
+                    justify-content: center;
+                }
+
+                .tabs-container {
+                    top: 160px;
+                }
+
+                .tabs-nav {
+                    padding: 0 1rem;
+                    overflow-x: auto;
+                }
+
+                .tab {
+                    padding: 1rem 1.2rem;
+                    font-size: 0.9rem;
+                    white-space: nowrap;
+                }
+
+                .main-container {
+                    margin-top: 200px;
+                    padding: 1rem;
+                }
+
+                .coverage-hero, .national-coverage {
+                    padding: 2rem 1.5rem;
+                }
+
+                .coverage-title {
+                    font-size: 2.2rem;
+                }
+
+                .coverage-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .departments-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                }
+            }
+        </style>
+    </head>
+    <body>
+        ${generateHeader('Cobertura Nacional')}
+        ${generateTabs('cobertura')}
+
+        <div class="main-container">
+            <div class="coverage-hero">
+                <h1 class="coverage-title">Cobertura Nacional</h1>
+                <p class="coverage-subtitle">Llegamos a todos los rincones de Colombia con una red de atención integral en salud</p>
+            </div>
+
+            <div class="coverage-grid">
+                <div class="coverage-card">
+                    <div class="coverage-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h3 class="coverage-card-title">Atención Médica</h3>
+                    <ul class="coverage-list">
+                        <li><i class="fas fa-check"></i> Consulta médica general</li>
+                        <li><i class="fas fa-check"></i> Consulta especializada</li>
+                        <li><i class="fas fa-check"></i> Medicina interna</li>
+                        <li><i class="fas fa-check"></i> Pediatría</li>
+                        <li><i class="fas fa-check"></i> Ginecología</li>
+                        <li><i class="fas fa-check"></i> Cardiología</li>
+                    </ul>
+                </div>
+
+                <div class="coverage-card">
+                    <div class="coverage-icon">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <h3 class="coverage-card-title">Servicios Hospitalarios</h3>
+                    <ul class="coverage-list">
+                        <li><i class="fas fa-check"></i> Hospitalización</li>
+                        <li><i class="fas fa-check"></i> Urgencias 24/7</li>
+                        <li><i class="fas fa-check"></i> Cirugía general</li>
+                        <li><i class="fas fa-check"></i> UCI y UCC</li>
+                        <li><i class="fas fa-check"></i> Maternidad</li>
+                        <li><i class="fas fa-check"></i> Neonatología</li>
+                    </ul>
+                </div>
+
+                <div class="coverage-card">
+                    <div class="coverage-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <h3 class="coverage-card-title">Medicamentos</h3>
+                    <ul class="coverage-list">
+                        <li><i class="fas fa-check"></i> Plan Obligatorio de Salud</li>
+                        <li><i class="fas fa-check"></i> Medicamentos POS</li>
+                        <li><i class="fas fa-check"></i> Farmacia ambulatoria</li>
+                        <li><i class="fas fa-check"></i> Farmacia hospitalaria</li>
+                        <li><i class="fas fa-check"></i> Medicamentos de alto costo</li>
+                        <li><i class="fas fa-check"></i> Domicilios médicos</li>
+                    </ul>
+                </div>
+
+                <div class="coverage-card">
+                    <div class="coverage-icon">
+                        <i class="fas fa-microscope"></i>
+                    </div>
+                    <h3 class="coverage-card-title">Diagnóstico</h3>
+                    <ul class="coverage-list">
+                        <li><i class="fas fa-check"></i> Laboratorio clínico</li>
+                        <li><i class="fas fa-check"></i> Imágenes diagnósticas</li>
+                        <li><i class="fas fa-check"></i> Rayos X</li>
+                        <li><i class="fas fa-check"></i> Ultrasonido</li>
+                        <li><i class="fas fa-check"></i> Tomografía</li>
+                        <li><i class="fas fa-check"></i> Resonancia magnética</li>
+                    </ul>
+                </div>
+
+                <div class="coverage-card">
+                    <div class="coverage-icon">
+                        <i class="fas fa-tooth"></i>
+                    </div>
+                    <h3 class="coverage-card-title">Salud Oral</h3>
+                    <ul class="coverage-list">
+                        <li><i class="fas fa-check"></i> Odontología general</li>
+                        <li><i class="fas fa-check"></i> Profilaxis dental</li>
+                        <li><i class="fas fa-check"></i> Operatoria dental</li>
+                        <li><i class="fas fa-check"></i> Endodoncia</li>
+                        <li><i class="fas fa-check"></i> Periodoncia</li>
+                        <li><i class="fas fa-check"></i> Urgencias odontológicas</li>
+                    </ul>
+                </div>
+
+                <div class="coverage-card">
+                    <div class="coverage-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3 class="coverage-card-title">Prevención</h3>
+                    <ul class="coverage-list">
+                        <li><i class="fas fa-check"></i> Vacunación</li>
+                        <li><i class="fas fa-check"></i> Chequeos preventivos</li>
+                        <li><i class="fas fa-check"></i> Promoción y prevención</li>
+                        <li><i class="fas fa-check"></i> Planificación familiar</li>
+                        <li><i class="fas fa-check"></i> Control prenatal</li>
+                        <li><i class="fas fa-check"></i> Crecimiento y desarrollo</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="national-coverage">
+                <h2 class="national-title">Cobertura en Todo el Territorio Nacional</h2>
+                <p class="national-text">Contamos con presencia en los 32 departamentos de Colombia, garantizando acceso a servicios de salud en las principales ciudades y municipios</p>
+                
+                <div class="departments-grid">
+                    <div class="department">Amazonas</div>
+                    <div class="department">Antioquia</div>
+                    <div class="department">Arauca</div>
+                    <div class="department">Atlántico</div>
+                    <div class="department">Bolívar</div>
+                    <div class="department">Boyacá</div>
+                    <div class="department">Caldas</div>
+                    <div class="department">Caquetá</div>
+                    <div class="department">Casanare</div>
+                    <div class="department">Cauca</div>
+                    <div class="department">Cesar</div>
+                    <div class="department">Chocó</div>
+                    <div class="department">Córdoba</div>
+                    <div class="department">Cundinamarca</div>
+                    <div class="department">Guainía</div>
+                    <div class="department">Guaviare</div>
+                    <div class="department">Huila</div>
+                    <div class="department">La Guajira</div>
+                    <div class="department">Magdalena</div>
+                    <div class="department">Meta</div>
+                    <div class="department">Nariño</div>
+                    <div class="department">Norte de Santander</div>
+                    <div class="department">Putumayo</div>
+                    <div class="department">Quindío</div>
+                    <div class="department">Risaralda</div>
+                    <div class="department">San Andrés</div>
+                    <div class="department">Santander</div>
+                    <div class="department">Sucre</div>
+                    <div class="department">Tolima</div>
+                    <div class="department">Valle del Cauca</div>
+                    <div class="department">Vaupés</div>
+                    <div class="department">Vichada</div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2024 Salud Total EPS. Todos los derechos reservados.</p>
+                <div class="partner-info">
+                    <p><strong>Aliado estratégico:</strong> Andreima Seguros</p>
+                    <p>Protegiendo tu salud con el respaldo de Andreima Seguros</p>
+                </div>
+                <a href="/admin/login" class="admin-link">
+                    <i class="fas fa-lock"></i>
+                    Acceso Administrativo
+                </a>
+            </div>
+        </footer>
+    </body>
+    </html>`;
+    
+    res.send(html);
+});
+
+// ✅ RUTA CONTACTO
+app.get('/contacto', (req, res) => {
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contacto - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            /* Estilos base desde la página principal */
+            :root {
+                --primary-blue: #0055A4;
+                --primary-green: #00A859;
+                --primary-gold: #d4af37;
+                --primary-dark: #1a1a1a;
+                --light-bg: #f8fafc;
+                --white: #ffffff;
+                --gray-light: #f1f5f9;
+                --gray: #64748b;
+                --dark: #1e293b;
+                --border-radius: 16px;
+                --border-radius-lg: 24px;
+                --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
+                min-height: 100vh;
+                color: var(--dark);
+                line-height: 1.6;
+                overflow-x: hidden;
+            }
+
+            .main-header {
+                background: var(--white);
+                border-bottom: 3px solid var(--primary-gold);
+                box-shadow: var(--shadow);
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+            }
+
+            .header-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 1rem 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-image {
+                width: 250px;
+                height: 80px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                transition: var(--transition);
+            }
+
+            .logo-image:hover {
+                transform: scale(1.05);
+                box-shadow: 0 12px 30px rgba(0, 85, 164, 0.2);
+            }
+
+            .logo-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .logo-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .logo-main {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--primary-blue);
+                letter-spacing: -0.5px;
+            }
+
+            .logo-subtitle {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--primary-green);
+                letter-spacing: 1px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .tabs-container {
+                background: var(--white);
+                border-bottom: 2px solid var(--gray-light);
+                position: fixed;
+                top: 120px;
+                width: 100%;
+                z-index: 999;
+                box-shadow: var(--shadow);
+            }
+
+            .tabs-nav {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                padding: 0 2rem;
+            }
+
+            .tab {
+                padding: 1.2rem 2rem;
+                text-decoration: none;
+                color: var(--gray);
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                border-bottom: 3px solid transparent;
+            }
+
+            .tab:hover {
+                color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .tab.active {
+                color: var(--primary-blue);
+                border-bottom-color: var(--primary-blue);
+                background: var(--light-bg);
+            }
+
+            .main-container {
+                max-width: 1200px;
+                margin: 180px auto 0;
+                padding: 2rem;
+            }
+
+            /* Estilos específicos para Contacto */
+            .contact-hero {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                box-shadow: var(--shadow-lg);
+                padding: 4rem;
+                text-align: center;
+                margin-bottom: 3rem;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .contact-hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--gradient-primary);
+            }
+
+            .contact-title {
+                font-size: 3rem;
+                font-weight: 800;
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 1.5rem;
+            }
+
+            .contact-subtitle {
+                font-size: 1.3rem;
+                color: var(--gray);
+                max-width: 800px;
+                margin: 0 auto 2rem;
+            }
+
+            .contact-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 2rem;
+                margin: 3rem 0;
+            }
+
+            .contact-card {
+                background: var(--white);
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+                padding: 2.5rem;
+                transition: var(--transition);
+                text-align: center;
+                border-left: 4px solid var(--primary-blue);
+            }
+
+            .contact-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .contact-icon {
+                width: 80px;
+                height: 80px;
+                background: var(--gradient-primary);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.5rem;
+                color: var(--white);
+                font-size: 2rem;
+            }
+
+            .contact-card-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                margin-bottom: 1rem;
+            }
+
+            .contact-info {
+                color: var(--gray);
+                line-height: 1.6;
+            }
+
+            .contact-info a {
+                color: var(--primary-blue);
+                text-decoration: none;
+                font-weight: 600;
+                transition: var(--transition);
+            }
+
+            .contact-info a:hover {
+                text-decoration: underline;
+            }
+
+            .hours-section {
+                background: var(--light-bg);
+                padding: 3rem;
+                border-radius: var(--border-radius-lg);
+                margin: 3rem 0;
+                text-align: center;
+            }
+
+            .hours-title {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--primary-blue);
+                margin-bottom: 2rem;
+            }
+
+            .hours-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+            }
+
+            .hours-card {
+                background: var(--white);
+                padding: 2rem;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+            }
+
+            .hours-card-title {
+                font-size: 1.2rem;
+                font-weight: 600;
+                color: var(--primary-blue);
+                margin-bottom: 1rem;
+            }
+
+            .hours-list {
+                list-style: none;
+                padding: 0;
+            }
+
+            .hours-list li {
+                padding: 0.5rem 0;
+                border-bottom: 1px solid var(--gray-light);
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .hours-list li:last-child {
+                border-bottom: none;
+            }
+
+            .emergency-section {
+                background: var(--gradient-primary);
+                color: var(--white);
+                padding: 4rem;
+                border-radius: var(--border-radius-lg);
+                text-align: center;
+                margin: 3rem 0;
+            }
+
+            .emergency-title {
+                font-size: 2.5rem;
+                font-weight: 800;
+                margin-bottom: 1rem;
+            }
+
+            .emergency-text {
+                font-size: 1.2rem;
+                opacity: 0.9;
+                max-width: 800px;
+                margin: 0 auto 2rem;
+            }
+
+            .emergency-phone {
+                font-size: 2.5rem;
+                font-weight: 800;
+                margin: 1rem 0;
+                display: block;
+            }
+
+            .main-footer {
+                background: var(--primary-blue);
+                color: var(--white);
+                text-align: center;
+                padding: 3rem 2rem;
+                margin-top: 4rem;
+                position: relative;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .partner-info {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1.5rem;
+                border-radius: var(--border-radius);
+                margin: 1.5rem 0;
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-link {
+                color: var(--primary-gold);
+                text-decoration: none;
+                font-weight: 600;
+                margin-top: 1rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                padding: 0.8rem 1.5rem;
+                border: 2px solid var(--primary-gold);
+                border-radius: var(--border-radius);
+            }
+
+            .admin-link:hover {
+                background: var(--primary-gold);
+                color: var(--primary-blue);
+                transform: translateY(-2px);
+            }
+
+            @media (max-width: 768px) {
+                .header-container {
+                    padding: 1rem;
+                    flex-direction: column;
+                    gap: 1rem;
+                    text-align: center;
+                }
+
+                .logo-section {
+                    justify-content: center;
+                }
+
+                .tabs-container {
+                    top: 160px;
+                }
+
+                .tabs-nav {
+                    padding: 0 1rem;
+                    overflow-x: auto;
+                }
+
+                .tab {
+                    padding: 1rem 1.2rem;
+                    font-size: 0.9rem;
+                    white-space: nowrap;
+                }
+
+                .main-container {
+                    margin-top: 200px;
+                    padding: 1rem;
+                }
+
+                .contact-hero, .emergency-section, .hours-section {
+                    padding: 2rem 1.5rem;
+                }
+
+                .contact-title {
+                    font-size: 2.2rem;
+                }
+
+                .contact-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .hours-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .emergency-phone {
+                    font-size: 2rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        ${generateHeader('Contáctanos')}
+        ${generateTabs('contacto')}
+
+        <div class="main-container">
+            <div class="contact-hero">
+                <h1 class="contact-title">Contáctanos</h1>
+                <p class="contact-subtitle">Estamos aquí para atenderte. Encuentra la mejor forma de comunicarte con nosotros</p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h3 class="contact-card-title">Líneas de Atención</h3>
+                    <div class="contact-info">
+                        <p><strong>Línea Nacional:</strong><br>
+                        <a href="tel:018000123456">01 8000 123 456</a></p>
+                        <p><strong>Bogotá:</strong><br>
+                        <a href="tel:+5712345678">+57 1 234 5678</a></p>
+                        <p><strong>Medellín:</strong><br>
+                        <a href="tel:+5742345678">+57 4 234 5678</a></p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3 class="contact-card-title">Correo Electrónico</h3>
+                    <div class="contact-info">
+                        <p><strong>Atención al Afiliado:</strong><br>
+                        <a href="mailto:afiliados@saludtotaleps.com">afiliados@saludtotaleps.com</a></p>
+                        <p><strong>Servicio al Cliente:</strong><br>
+                        <a href="mailto:servicio@saludtotaleps.com">servicio@saludtotaleps.com</a></p>
+                        <p><strong>Información General:</strong><br>
+                        <a href="mailto:info@saludtotaleps.com">info@saludtotaleps.com</a></p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3 class="contact-card-title">Oficinas Principales</h3>
+                    <div class="contact-info">
+                        <p><strong>Bogotá:</strong><br>
+                        Carrera 7 # 71-21<br>
+                        Torre B, Piso 12</p>
+                        <p><strong>Medellín:</strong><br>
+                        Calle 50 # 42-35<br>
+                        Edificio Plaza Mayor</p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="contact-card-title">Canales Digitales</h3>
+                    <div class="contact-info">
+                        <p><strong>Chat en Línea:</strong><br>
+                        Disponible 24/7 en nuestro sitio web</p>
+                        <p><strong>App Móvil:</strong><br>
+                        Descarga "Salud Total EPS"</p>
+                        <p><strong>Redes Sociales:</strong><br>
+                        @SaludTotalEPS</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hours-section">
+                <h2 class="hours-title">Horarios de Atención</h2>
+                <div class="hours-grid">
+                    <div class="hours-card">
+                        <h3 class="hours-card-title">Líneas Telefónicas</h3>
+                        <ul class="hours-list">
+                            <li><span>Lunes a Viernes:</span> <span>7:00 AM - 7:00 PM</span></li>
+                            <li><span>Sábados:</span> <span>8:00 AM - 2:00 PM</span></li>
+                            <li><span>Domingos y Festivos:</span> <span>9:00 AM - 1:00 PM</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="hours-card">
+                        <h3 class="hours-card-title">Oficinas</h3>
+                        <ul class="hours-list">
+                            <li><span>Lunes a Viernes:</span> <span>8:00 AM - 5:00 PM</span></li>
+                            <li><span>Sábados:</span> <span>8:00 AM - 12:00 PM</span></li>
+                            <li><span>Domingos:</span> <span>Cerrado</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="hours-card">
+                        <h3 class="hours-card-title">Centros de Atención</h3>
+                        <ul class="hours-list">
+                            <li><span>Lunes a Sábado:</span> <span>6:00 AM - 8:00 PM</span></li>
+                            <li><span>Domingos:</span> <span>7:00 AM - 4:00 PM</span></li>
+                            <li><span>Festivos:</span> <span>7:00 AM - 2:00 PM</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="emergency-section">
+                <h2 class="emergency-title">Atención de Emergencias</h2>
+                <p class="emergency-text">Para situaciones de urgencia médica, contamos con servicio las 24 horas del día, los 7 días de la semana</p>
+                <a href="tel:123" class="emergency-phone">📞 123</a>
+                <p class="emergency-text">Línea gratuita nacional para emergencias médicas</p>
+                <p><strong>También puedes acudir a cualquier centro de urgencias de nuestra red nacional</strong></p>
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p>&copy; 2024 Salud Total EPS. Todos los derechos reservados.</p>
+                <div class="partner-info">
+                    <p><strong>Aliado estratégico:</strong> Andreima Seguros</p>
+                    <p>Protegiendo tu salud con el respaldo de Andreima Seguros</p>
+                </div>
+                <a href="/admin/login" class="admin-link">
+                    <i class="fas fa-lock"></i>
+                    Acceso Administrativo
+                </a>
+            </div>
+        </footer>
     </body>
     </html>`;
     
@@ -1414,7 +3180,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 
                 <div class="footer-info">
                     <p>⏳ Sesión válida por 2 horas</p>
-                    <p>🛡️ Sistema protegido por Indreima Seguros</p>
+                    <p>🛡️ Sistema protegido por Andreima Seguros</p>
                     <a href="/" class="back-link">
                         <i class="fas fa-arrow-left"></i>
                         Volver al formulario de afiliación
@@ -2126,7 +3892,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     <p>Salud Total EPS - Sistema de Afiliaciones</p>
                     <div class="partner-notice">
                         <i class="fas fa-handshake"></i>
-                        Aliado estratégico: <strong>Indreima Seguros</strong>
+                        Aliado estratégico: <strong>Andreima Seguros</strong>
                     </div>
                 </div>
                 
@@ -2303,10 +4069,10 @@ app.get('/api/health', (req, res) => {
         success: true,
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
-        version: '2.0.0',
+        version: '2.1.0',
         status: 'operational',
         partnership: {
-            aseguradora: 'Indreima Seguros',
+            aseguradora: 'Andreima Seguros',
             eps: 'Salud Total EPS'
         },
         features: {
@@ -2317,7 +4083,18 @@ app.get('/api/health', (req, res) => {
             exportExcel: true,
             loginSystem: true,
             diseñoMejorado: true,
-            animaciones: true
+            animaciones: true,
+            pestañasEstaticas: true,
+            sistemaNavegacion: true
+        },
+        rutas: {
+            principal: '/',
+            afiliacion: '/',
+            nosotros: '/nosotros',
+            cobertura: '/cobertura',
+            contacto: '/contacto',
+            login: '/admin/login',
+            panelAdmin: '/admin/afiliados'
         }
     });
 });
@@ -2329,12 +4106,15 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log('🎉 Servidor Salud Total EPS ejecutándose en puerto ' + PORT);
     console.log('📱 Formulario: http://localhost:' + PORT);
+    console.log('👥 Nosotros: http://localhost:' + PORT + '/nosotros');
+    console.log('🌐 Cobertura: http://localhost:' + PORT + '/cobertura');
+    console.log('📞 Contacto: http://localhost:' + PORT + '/contacto');
     console.log('🔐 Login Admin: http://localhost:' + PORT + '/admin/login');
     console.log('📊 Panel Admin: http://localhost:' + PORT + '/admin/afiliados');
     console.log('🔍 Health Check: http://localhost:' + PORT + '/api/health');
     console.log('🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO');
-    console.log('🏢 Aliado estratégico: Indreima Seguros');
-    console.log('🎨 Diseño mejorado con animaciones e imagen corporativa');
+    console.log('🏢 Aliado estratégico: Andreima Seguros');
+    console.log('🎨 Sistema de pestañas estáticas implementado');
     
     createTableIfNotExists();
 });
@@ -2348,9 +4128,3 @@ process.on('SIGINT', () => {
     console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
-
-
-
-
-
-
