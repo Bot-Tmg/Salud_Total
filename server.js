@@ -2,10 +2,27 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+// ==============================================
+// 🔐 CONFIGURACIÓN DE SEGURIDAD Y AUTENTICACIÓN
+// ==============================================
+
+// Middleware de sesión
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'salud-total-eps-seguridad-datos-2024',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 2 * 60 * 60 * 1000 // 2 horas
+    }
+}));
 
 // ==============================================
 // 🗄️ CONFIGURACIÓN DE BASE DE DATOS
@@ -22,7 +39,6 @@ async function createTableIfNotExists() {
     try {
         console.log('🔍 Verificando si existe la tabla affiliates...');
         
-        // Primero verificar si la tabla existe
         const tableExists = await pool.query(`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables 
@@ -31,7 +47,6 @@ async function createTableIfNotExists() {
         `);
         
         if (!tableExists.rows[0].exists) {
-            // Crear tabla nueva con la columna tratamiento_datos
             await pool.query(`
                 CREATE TABLE affiliates (
                     id SERIAL PRIMARY KEY,
@@ -50,7 +65,6 @@ async function createTableIfNotExists() {
             `);
             console.log('✅ Tabla affiliates creada con columna tratamiento_datos');
         } else {
-            // Verificar si la columna tratamiento_datos existe
             const columnExists = await pool.query(`
                 SELECT EXISTS (
                     SELECT FROM information_schema.columns 
@@ -59,7 +73,6 @@ async function createTableIfNotExists() {
             `);
             
             if (!columnExists.rows[0].exists) {
-                // Agregar la columna si no existe
                 await pool.query(`
                     ALTER TABLE affiliates 
                     ADD COLUMN tratamiento_datos BOOLEAN DEFAULT FALSE;
@@ -76,10 +89,28 @@ async function createTableIfNotExists() {
 }
 
 // ==============================================
+// 🛡️ MIDDLEWARE DE AUTENTICACIÓN
+// ==============================================
+
+function requireAuth(req, res, next) {
+    if (req.session && req.session.isAuthenticated) {
+        return next();
+    } else {
+        return res.redirect('/admin/login');
+    }
+}
+
+function redirectIfAuthenticated(req, res, next) {
+    if (req.session && req.session.isAuthenticated) {
+        return res.redirect('/admin/afiliados');
+    }
+    next();
+}
+
+// ==============================================
 // 🎨 CONFIGURACIÓN DEL FRONTEND
 // ==============================================
 
-// ✅ FUNCIÓN PARA CREAR TU FRONTEND
 function ensureFrontendExists() {
     const frontDir = path.join(__dirname, 'front');
     const indexPath = path.join(frontDir, 'index.html');
@@ -1384,29 +1415,217 @@ function ensureFrontendExists() {
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'front')));
 
 // ==============================================
 // 🚀 RUTAS DE LA APLICACIÓN
 // ==============================================
 
-// ✅ RUTA PRINCIPAL
+// ✅ RUTA PRINCIPAL (pública)
 app.get('/', (req, res) => {
     ensureFrontendExists();
     res.sendFile(path.join(__dirname, 'front', 'index.html'));
 });
 
-// ✅ RUTA PARA PROCESAR EL FORMULARIO
+// ✅ RUTA DE LOGIN (pública)
+app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
+    const loginHTML = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Acceso Administrativo - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+            body { background: linear-gradient(135deg, #0055A4 0%, #003366 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+            .login-container { background: white; border-radius: 15px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); overflow: hidden; width: 100%; max-width: 450px; animation: slideUp 0.6s ease; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+            .login-header { background: linear-gradient(135deg, #0055A4, #003366); color: white; padding: 40px 30px; text-align: center; }
+            .login-header h1 { font-size: 1.8rem; margin-bottom: 10px; }
+            .login-header p { opacity: 0.9; font-size: 0.9rem; }
+            .login-body { padding: 40px 30px; }
+            .security-notice { background: #f0f7ff; border: 1px solid #0055A4; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: center; }
+            .security-notice i { color: #0055A4; font-size: 1.2rem; margin-bottom: 8px; display: block; }
+            .security-notice p { color: #0055A4; font-size: 0.85rem; font-weight: 600; }
+            .form-group { margin-bottom: 20px; }
+            .form-label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 0.9rem; }
+            .input-container { position: relative; }
+            .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
+            .form-input { width: 100%; padding: 14px 14px 14px 45px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 15px; transition: all 0.3s ease; background: #f8f9fa; }
+            .form-input:focus { outline: none; border-color: #0055A4; background: white; box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1); }
+            .login-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #0055A4, #003366); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
+            .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3); }
+            .login-btn:active { transform: translateY(0); }
+            .error-message { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; display: none; border: 1px solid #fecaca; }
+            .error-message.show { display: block; animation: shake 0.5s ease; }
+            @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+            .footer-info { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+            .footer-info p { color: #666; font-size: 0.8rem; }
+            .back-link { display: inline-flex; align-items: center; gap: 5px; color: #0055A4; text-decoration: none; font-weight: 600; margin-top: 10px; font-size: 0.85rem; }
+            .back-link:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-header">
+                <h1><i class="fas fa-shield-alt"></i> Acceso Administrativo</h1>
+                <p>Salud Total EPS - Sistema de Afiliaciones</p>
+            </div>
+            
+            <div class="login-body">
+                <div class="security-notice">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>🔒 Zona restringida - Manejo de datos personales sensibles</p>
+                </div>
+                
+                <div id="errorMessage" class="error-message"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Usuario Administrativo</label>
+                        <div class="input-container">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" class="form-input" id="username" name="username" placeholder="Ingresa tu usuario" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <div class="input-container">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" class="form-input" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        INGRESAR AL SISTEMA
+                    </button>
+                </form>
+                
+                <div class="footer-info">
+                    <p>⏳ Sesión válida por 2 horas</p>
+                    <p>🛡️ Protegido por Ley 1581 de 2012</p>
+                    <a href="/" class="back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al formulario de afiliación
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const loginBtn = document.getElementById('loginBtn');
+                const errorMessage = document.getElementById('errorMessage');
+                const originalText = loginBtn.innerHTML;
+                
+                const formData = {
+                    username: document.getElementById('username').value.trim(),
+                    password: document.getElementById('password').value
+                };
+                
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFICANDO...';
+                errorMessage.classList.remove('show');
+                
+                try {
+                    const response = await fetch('/admin/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        window.location.href = '/admin/afiliados';
+                    } else {
+                        throw new Error(result.message);
+                    }
+                    
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.add('show');
+                    document.querySelector('.login-container').style.animation = 'shake 0.5s ease';
+                    setTimeout(() => {
+                        document.querySelector('.login-container').style.animation = '';
+                    }, 500);
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                }
+            });
+            
+            document.getElementById('username').addEventListener('input', function() {
+                document.getElementById('errorMessage').classList.remove('show');
+            });
+            
+            document.getElementById('password').addEventListener('input', function() {
+                document.getElementById('errorMessage').classList.remove('show');
+            });
+        </script>
+    </body>
+    </html>`;
+    
+    res.send(loginHTML);
+});
+
+// ✅ RUTA PARA PROCESAR LOGIN
+app.post('/admin/auth/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin_saludtotal';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SaludTotal2024!';
+    
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        req.session.isAuthenticated = true;
+        req.session.user = {
+            username: username,
+            loginTime: new Date(),
+            userAgent: req.get('User-Agent')
+        };
+        
+        console.log(`🔐 Login exitoso: ${username} desde ${req.ip}`);
+        
+        res.json({
+            success: true,
+            message: '✅ Autenticación exitosa'
+        });
+    } else {
+        console.log(`❌ Intento de login fallido: ${username} desde ${req.ip}`);
+        res.status(401).json({
+            success: false,
+            message: '❌ Credenciales incorrectas'
+        });
+    }
+});
+
+// ✅ RUTA PARA LOGOUT
+app.post('/admin/auth/logout', requireAuth, (req, res) => {
+    console.log(`🚪 Logout: ${req.session.user.username}`);
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: 'Error al cerrar sesión' });
+        }
+        res.json({ success: true, message: '✅ Sesión cerrada correctamente' });
+    });
+});
+
+// ✅ RUTA PARA PROCESAR EL FORMULARIO (pública)
 app.post('/api/formulario/solicitud', async (req, res) => {
     try {
-        // ✅ CREAR TABLA SI NO EXISTE
         await createTableIfNotExists();
         
         const formData = req.body;
         
         console.log('📝 Datos recibidos del formulario:', formData);
         
-        // Validar OBLIGATORIAMENTE que se haya autorizado el tratamiento de datos
         if (!formData.tratamiento_datos) {
             return res.status(400).json({
                 success: false,
@@ -1414,7 +1633,6 @@ app.post('/api/formulario/solicitud', async (req, res) => {
             });
         }
         
-        // ✅ GUARDAR EN POSTGRESQL
         const result = await pool.query(
             `INSERT INTO affiliates 
             (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, affiliate_id) 
@@ -1448,7 +1666,6 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     } catch (error) {
         console.error('❌ Error al guardar en PostgreSQL:', error);
         
-        // Manejar error de duplicado
         if (error.code === '23505') {
             if (error.constraint === 'affiliates_correo_key') {
                 return res.status(400).json({
@@ -1471,8 +1688,8 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA ELIMINAR UN AFILIADO
-app.delete('/api/afiliados/:id', async (req, res) => {
+// ✅ RUTA PARA ELIMINAR UN AFILIADO (protegida)
+app.delete('/api/afiliados/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -1507,10 +1724,9 @@ app.delete('/api/afiliados/:id', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL
-app.get('/admin/descargar-excel', async (req, res) => {
+// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL (protegida)
+app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
     try {
-        // ✅ CREAR TABLA SI NO EXISTE
         await createTableIfNotExists();
         
         const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
@@ -1522,10 +1738,8 @@ app.get('/admin/descargar-excel', async (req, res) => {
             });
         }
 
-        // Importar la librería XLSX
         const XLSX = require('xlsx');
 
-        // Preparar datos para Excel
         const excelData = result.rows.map(afiliado => ({
             'ID Afiliado': afiliado.affiliate_id,
             'Nombre': afiliado.nombre,
@@ -1541,20 +1755,15 @@ app.get('/admin/descargar-excel', async (req, res) => {
             'Estado': 'Activo'
         }));
 
-        // Crear libro de trabajo y hoja
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(excelData);
-
-        // Agregar hoja al libro
         XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
 
-        // Configurar headers para descarga
         const fileName = `afiliados_salud_total_${new Date().toISOString().split('T')[0]}.xlsx`;
         
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 
-        // Escribir archivo y enviar
         const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
         res.send(buffer);
 
@@ -1569,28 +1778,9 @@ app.get('/admin/descargar-excel', async (req, res) => {
     }
 });
 
-// ✅ HEALTH CHECK
-app.get('/api/health', (req, res) => {
-    res.json({
-        success: true,
-        message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        status: 'operational',
-        features: {
-            formularioAfiliacion: true,
-            tratamientoDatos: true,
-            baseDatos: true,
-            panelAdmin: true,
-            exportExcel: true
-        }
-    });
-});
-
-// ✅ RUTA PARA VER DATOS EN TABLA
-app.get('/admin/afiliados', async (req, res) => {
+// ✅ RUTA DEL PANEL DE ADMINISTRACIÓN (protegida)
+app.get('/admin/afiliados', requireAuth, async (req, res) => {
     try {
-        // ✅ CREAR TABLA SI NO EXISTE
         await createTableIfNotExists();
         
         const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
@@ -1624,6 +1814,49 @@ app.get('/admin/afiliados', async (req, res) => {
                     border-radius: 15px;
                     box-shadow: 0 10px 30px rgba(0, 85, 164, 0.1);
                     overflow: hidden;
+                }
+                
+                .session-header {
+                    background: #1e40af;
+                    color: white;
+                    padding: 15px 30px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid #374151;
+                }
+                
+                .session-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    font-size: 0.9rem;
+                }
+                
+                .logout-btn {
+                    background: #ef4444;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.3s ease;
+                }
+                
+                .logout-btn:hover {
+                    background: #dc2626;
+                    transform: translateY(-2px);
+                }
+                
+                .security-badge {
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 0.7rem;
                 }
                 
                 .admin-header {
@@ -1858,6 +2091,12 @@ app.get('/admin/afiliados', async (req, res) => {
                         width: 100%;
                         justify-content: center;
                     }
+                    
+                    .session-header {
+                        flex-direction: column;
+                        gap: 10px;
+                        text-align: center;
+                    }
                 }
             </style>
         </head>
@@ -1865,6 +2104,20 @@ app.get('/admin/afiliados', async (req, res) => {
             <div id="notification" class="notification" style="display: none;"></div>
 
             <div class="admin-container">
+                <div class="session-header">
+                    <div class="session-info">
+                        <div class="security-badge">
+                            <i class="fas fa-shield-alt"></i>
+                            Sesión activa: ${req.session.user.username}
+                        </div>
+                        <div>Conectado desde: ${new Date(req.session.user.loginTime).toLocaleString('es-CO')}</div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Cerrar Sesión
+                    </button>
+                </div>
+                
                 <div class="admin-header">
                     <h1>🏥 Salud Total EPS</h1>
                     <p>Panel de Administración - Sistema de Afiliaciones</p>
@@ -1977,7 +2230,6 @@ app.get('/admin/afiliados', async (req, res) => {
                     }, 4000);
                 }
                 
-                // Delete affiliate function
                 async function deleteAffiliate(affiliateId, fullName) {
                     if (confirm('¿Estás seguro de que deseas eliminar al afiliado: ' + fullName + '?\\n\\nEsta acción no se puede deshacer.')) {
                         try {
@@ -2001,7 +2253,25 @@ app.get('/admin/afiliados', async (req, res) => {
                     }
                 }
                 
-                // Agregar efecto de carga para el botón de Excel
+                async function logout() {
+                    try {
+                        const response = await fetch('/admin/auth/logout', {
+                            method: 'POST'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            window.location.href = '/admin/login';
+                        } else {
+                            alert('Error al cerrar sesión');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error de conexión');
+                    }
+                }
+                
                 document.querySelector('.stat-card.excel').addEventListener('click', function() {
                     this.style.transform = 'scale(0.95)';
                     setTimeout(() => {
@@ -2020,25 +2290,27 @@ app.get('/admin/afiliados', async (req, res) => {
     }
 });
 
-// ==============================================
-// 🛡️ MANEJO DE ERRORES
-// ==============================================
-
-app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Ruta no encontrada',
-        path: req.originalUrl,
-        method: req.method,
+// ✅ HEALTH CHECK (pública)
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
-        availableRoutes: [
-            'GET / - Formulario de afiliación',
-            'POST /api/formulario/solicitud - Enviar formulario',
-            'GET /api/health - Health check',
-            'GET /admin/afiliados - Ver afiliados en tabla',
-            'GET /admin/descargar-excel - Descargar Excel con datos',
-            'DELETE /api/afiliados/:id - Eliminar afiliado'
-        ]
+        version: '1.0.0',
+        status: 'operational',
+        security: {
+            authentication: true,
+            sessionManagement: true,
+            adminPanelProtected: true
+        },
+        features: {
+            formularioAfiliacion: true,
+            tratamientoDatos: true,
+            baseDatos: true,
+            panelAdmin: true,
+            exportExcel: true,
+            loginSystem: true
+        }
     });
 });
 
@@ -2049,12 +2321,12 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🎉 Servidor Salud Total EPS ejecutándose en puerto ${PORT}`);
     console.log(`📱 Formulario: http://localhost:${PORT}`);
-    console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🔐 Login Admin: http://localhost:${PORT}/admin/login`);
     console.log(`📊 Panel Admin: http://localhost:${PORT}/admin/afiliados`);
-    console.log(`📥 Descarga Excel: http://localhost:${PORT}/admin/descargar-excel`);
-    console.log(`🗄️  Base de datos: ${process.env.DATABASE_URL ? 'Conectada' : 'No configurada'}`);
-    console.log(`🛡️  Sistema de Tratamiento de Datos implementado`);
-    console.log(`⚠️  Autorización de datos: OBLIGATORIA para afiliación`);
+    console.log(`🔍 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO`);
+    console.log(`📋 Configura en Render: ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET`);
+    
     ensureFrontendExists();
 });
 
