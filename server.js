@@ -109,7 +109,7 @@ function generateHeader(title, showLogo = true) {
             ${showLogo ? `
             <div class="logo-section">
                 <div class="logo-image">
-                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+                    <img src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fandreimaseguros.com%2Fandreimaseguros%2F&psig=AOvVaw0tqDexm-S3wjFdtlqK9xtD&ust=1762961857319000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCODwgu226pADFQAAAAAdAAAAABAE" 
                          alt="Salud Total EPS" 
                          class="logo-img">
                 </div>
@@ -2348,3 +2348,4 @@ process.on('SIGINT', () => {
     console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
+
