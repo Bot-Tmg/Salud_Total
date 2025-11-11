@@ -179,7 +179,7 @@ app.get('/', (req, res) => {
                 background: var(--white);
                 border-bottom: 3px solid var(--primary-gold);
                 box-shadow: var(--shadow);
-                position: sticky;
+                position: fixed;
                 top: 0;
                 z-index: 1000;
                 backdrop-filter: blur(10px);
@@ -201,8 +201,8 @@ app.get('/', (req, res) => {
             }
 
             .logo-image {
-                width: 300px;
-                height: 85px;
+                width: 250px;
+                height: 80px;
                 border-radius: 12px;
                 overflow: hidden;
                 box-shadow: var(--shadow);
@@ -1136,7 +1136,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
 
             .logo-image {
                 width: 280px;
-                height: 85px;
+                height: 80px;
                 border-radius: 10px;
                 overflow: hidden;
                 box-shadow: var(--shadow);
@@ -1756,8 +1756,8 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
 
                 .logo-image {
-                    width: 50px;
-                    height: 50px;
+                    width: 250px;
+                    height: 80px;
                     border-radius: 10px;
                     overflow: hidden;
                     box-shadow: var(--shadow);
@@ -2348,6 +2348,7 @@ process.on('SIGINT', () => {
     console.log('🛑 Recibido SIGINT. Cerrando servidor...');
     process.exit(0);
 });
+
 
 
 
