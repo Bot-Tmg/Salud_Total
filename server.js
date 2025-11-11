@@ -104,7 +104,7 @@ app.use(express.urlencoded({ extended: true }));
 // 🎨 FUNCIÓN PARA GENERAR HEADER CON LOGO
 // ==============================================
 
-function generateHeader(title = 'Salud Total EPS') {
+function generateHeader(title) {
     return `
     <header class="main-header">
         <div class="header-container">
@@ -164,7 +164,6 @@ app.get('/', (req, res) => {
                 line-height: 1.6;
             }
 
-            /* HEADER ESTILOS */
             .main-header {
                 background: var(--white);
                 border-bottom: 3px solid var(--primary-gold);
@@ -210,7 +209,6 @@ app.get('/', (req, res) => {
                 color: var(--primary-blue);
             }
 
-            /* CONTAINER PRINCIPAL */
             .main-container {
                 max-width: 1200px;
                 margin: 0 auto;
@@ -252,7 +250,6 @@ app.get('/', (req, res) => {
                 margin-top: 1rem;
             }
 
-            /* FORMULARIO */
             .form-container {
                 background: var(--white);
                 border-radius: var(--border-radius-lg);
@@ -358,7 +355,6 @@ app.get('/', (req, res) => {
                 color: var(--primary-blue);
             }
 
-            /* CHECKBOX TRATAMIENTO DE DATOS */
             .checkbox-group {
                 background: var(--light-bg);
                 padding: 1.5rem;
@@ -402,7 +398,6 @@ app.get('/', (req, res) => {
                 font-weight: bold;
             }
 
-            /* BOTÓN ENVIAR */
             .submit-btn {
                 width: 100%;
                 padding: 1.2rem;
@@ -431,7 +426,6 @@ app.get('/', (req, res) => {
                 transform: none !important;
             }
 
-            /* MENSAJES */
             .message-box {
                 margin-top: 1rem;
                 padding: 1rem;
@@ -459,7 +453,6 @@ app.get('/', (req, res) => {
                 border: 1px solid #bfdbfe;
             }
 
-            /* FOOTER */
             .main-footer {
                 background: var(--primary-blue);
                 color: var(--white);
@@ -492,7 +485,6 @@ app.get('/', (req, res) => {
                 text-decoration: underline;
             }
 
-            /* RESPONSIVE */
             @media (max-width: 768px) {
                 .header-container {
                     padding: 1rem;
@@ -654,7 +646,6 @@ app.get('/', (req, res) => {
         <script>
             const API_URL = '/api/formulario/solicitud';
 
-            // Modal de política de privacidad (simplificado)
             document.getElementById('openPrivacyPolicy')?.addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('Política de Tratamiento de Datos: Sus datos serán utilizados exclusivamente para el proceso de afiliación al Sistema de Salud y protegidos conforme a la Ley 1581 de 2012.');
@@ -724,7 +715,7 @@ app.get('/', (req, res) => {
                     const result = await response.json();
 
                     if (!response.ok) {
-                        throw new Error(result.message || \`Error \${response.status}: \${response.statusText}\`);
+                        throw new Error(result.message || 'Error ' + response.status + ': ' + response.statusText);
                     }
 
                     if (result.success) {
@@ -754,7 +745,7 @@ app.get('/', (req, res) => {
             function showMessage(text, type) {
                 const messageBox = document.getElementById('message-box');
                 messageBox.innerHTML = text;
-                messageBox.className = \`message-box \${type}\`;
+                messageBox.className = 'message-box ' + type;
                 messageBox.style.display = 'block';
                 if (type === 'success') {
                     setTimeout(() => {
@@ -783,7 +774,7 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
-// ✅ RUTA DE LOGIN (manteniendo el resto del código similar pero con títulos corregidos)
+// ✅ RUTA DE LOGIN
 app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -1149,14 +1140,14 @@ app.post('/admin/auth/login', (req, res) => {
             userAgent: req.get('User-Agent')
         };
         
-        console.log(\`🔐 Login exitoso: \${username} desde \${req.ip}\`);
+        console.log("🔐 Login exitoso: " + username + " desde " + req.ip);
         
         res.json({
             success: true,
             message: '✅ Autenticación exitosa'
         });
     } else {
-        console.log(\`❌ Intento de login fallido: \${username} desde \${req.ip}\`);
+        console.log("❌ Intento de login fallido: " + username + " desde " + req.ip);
         res.status(401).json({
             success: false,
             message: '❌ Credenciales incorrectas'
@@ -1166,7 +1157,7 @@ app.post('/admin/auth/login', (req, res) => {
 
 // ✅ RUTA PARA LOGOUT
 app.post('/admin/auth/logout', requireAuth, (req, res) => {
-    console.log(\`🚪 Logout: \${req.session.user.username}\`);
+    console.log("🚪 Logout: " + req.session.user.username);
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Error al cerrar sesión' });
@@ -1192,10 +1183,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
         }
         
         const result = await pool.query(
-            \`INSERT INTO affiliates 
-            (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, affiliate_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-            RETURNING *\`,
+            'INSERT INTO affiliates (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, affiliate_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
             [
                 formData.nombre,
                 formData.apellido,
@@ -1251,7 +1239,7 @@ app.delete('/api/afiliados/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
         
-        console.log(\`🗑️ Eliminando afiliado ID: \${id}\`);
+        console.log('🗑️ Eliminando afiliado ID: ' + id);
         
         const result = await pool.query(
             'DELETE FROM affiliates WHERE affiliate_id = $1 RETURNING *',
@@ -1317,15 +1305,15 @@ app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
         const ws = XLSX.utils.json_to_sheet(excelData);
         XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
 
-        const fileName = \`afiliados_salud_total_\${new Date().toISOString().split('T')[0]}.xlsx\`;
+        const fileName = 'afiliados_salud_total_' + new Date().toISOString().split('T')[0] + '.xlsx';
         
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', \`attachment; filename="\${fileName}"\`);
+        res.setHeader('Content-Disposition', 'attachment; filename="' + fileName + '"');
 
         const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
         res.send(buffer);
 
-        console.log(\`✅ Archivo Excel descargado: \${fileName} con \${result.rows.length} registros\`);
+        console.log('✅ Archivo Excel descargado: ' + fileName + ' con ' + result.rows.length + ' registros');
 
     } catch (error) {
         console.error('❌ Error al generar Excel:', error);
@@ -1343,7 +1331,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
         
         const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
         
-        let html = \`
+        let html = `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -1366,7 +1354,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     color: #1a1a1a;
                 }
 
-                /* HEADER */
                 .main-header {
                     background: #ffffff;
                     border-bottom: 3px solid #d4af37;
@@ -1441,7 +1428,6 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     border: 1px solid #bfdbfe;
                 }
 
-                /* CONTENIDO PRINCIPAL */
                 .admin-container {
                     max-width: 1400px;
                     margin: 0 auto;
@@ -1713,9 +1699,9 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 <div class="session-info">
                     <div class="security-badge">
                         <i class="fas fa-shield-alt"></i>
-                        Sesión activa: \${req.session.user.username}
+                        Sesión activa: ${req.session.user.username}
                     </div>
-                    <div>Conectado desde: \${new Date(req.session.user.loginTime).toLocaleString('es-CO')}</div>
+                    <div>Conectado desde: ${new Date(req.session.user.loginTime).toLocaleString('es-CO')}</div>
                     <button class="logout-btn" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         Cerrar Sesión
@@ -1733,25 +1719,25 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 
                 <div class="stats-container">
                     <div class="stat-card">
-                        <div class="stat-number">\${result.rows.length}</div>
+                        <div class="stat-number">${result.rows.length}</div>
                         <div class="stat-label">Total Afiliados</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">\${result.rows.filter(a => a.tratamiento_datos).length}</div>
+                        <div class="stat-number">${result.rows.filter(a => a.tratamiento_datos).length}</div>
                         <div class="stat-label">Tratamiento Autorizado</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">\${new Date().getFullYear()}</div>
+                        <div class="stat-number">${new Date().getFullYear()}</div>
                         <div class="stat-label">Año Actual</div>
                     </div>
                     <div class="stat-card excel" onclick="window.location.href='/admin/descargar-excel'">
                         <div class="stat-number"><i class="fas fa-file-excel"></i></div>
                         <div class="stat-label">Descargar Excel</div>
                     </div>
-                </div>\`;
+                </div>`;
         
         if (result.rows.length === 0) {
-            html += \`
+            html += `
                     <div class="empty-state">
                         <i class="fas fa-database"></i>
                         <h2>No hay afiliados registrados</h2>
@@ -1760,9 +1746,9 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                             <i class="fas fa-info-circle"></i>
                             ¡El sistema está listo! Los afiliados aparecerán aquí.
                         </p>
-                    </div>\`;
+                    </div>`;
         } else {
-            html += \`
+            html += `
                     <div class="data-table">
                         <table>
                             <thead>
@@ -1778,40 +1764,40 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>\`;
+                            <tbody>`;
             
             result.rows.forEach(afiliado => {
-                html += \`
+                html += `
                                 <tr>
-                                    <td><strong>\${afiliado.affiliate_id}</strong></td>
-                                    <td>\${afiliado.nombre} \${afiliado.apellido}</td>
-                                    <td>\${afiliado.tipo_documento}: \${afiliado.numero_documento}</td>
-                                    <td>\${afiliado.correo}</td>
-                                    <td>\${afiliado.edad} años</td>
+                                    <td><strong>${afiliado.affiliate_id}</strong></td>
+                                    <td>${afiliado.nombre} ${afiliado.apellido}</td>
+                                    <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
+                                    <td>${afiliado.correo}</td>
+                                    <td>${afiliado.edad} años</td>
                                     <td>
-                                        <span class="badge \${afiliado.tratamiento_datos ? 'badge-success' : 'badge-warning'}">
-                                            \${afiliado.tratamiento_datos ? 'AUTORIZADO' : 'NO AUTORIZADO'}
+                                        <span class="badge ${afiliado.tratamiento_datos ? 'badge-success' : 'badge-warning'}">
+                                            ${afiliado.tratamiento_datos ? 'AUTORIZADO' : 'NO AUTORIZADO'}
                                         </span>
                                     </td>
-                                    <td>\${afiliado.lugar_nacimiento}</td>
-                                    <td>\${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
+                                    <td>${afiliado.lugar_nacimiento}</td>
+                                    <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn btn-delete" onclick="deleteAffiliate('\${afiliado.affiliate_id}', '\${afiliado.nombre} \${afiliado.apellido}')">
+                                            <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </button>
                                         </div>
                                     </td>
-                                </tr>\`;
+                                </tr>`;
             });
             
-            html += \`
+            html += `
                             </tbody>
                         </table>
-                    </div>\`;
+                    </div>`;
         }
         
-        html += \`
+        html += `
                 </div>
                 
                 <div class="download-section">
@@ -1820,8 +1806,8 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                         DESCARGAR REPORTE COMPLETO EN EXCEL
                     </a>
                     <div class="download-info">
-                        \${result.rows.length} registros disponibles | 
-                        Tratamiento de datos autorizado: \${result.rows.filter(a => a.tratamiento_datos).length} afiliados
+                        ${result.rows.length} registros disponibles | 
+                        Tratamiento de datos autorizado: ${result.rows.filter(a => a.tratamiento_datos).length} afiliados
                     </div>
                 </div>
             </div>
@@ -1888,7 +1874,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 });
             </script>
         </body>
-        </html>\`;
+        </html>`;
         
         res.send(html);
         
@@ -1931,13 +1917,13 @@ app.get('/api/health', (req, res) => {
 // ==============================================
 
 app.listen(PORT, () => {
-    console.log(\`🎉 Servidor Salud Total EPS ejecutándose en puerto \${PORT}\`);
-    console.log(\`📱 Formulario: http://localhost:\${PORT}\`);
-    console.log(\`🔐 Login Admin: http://localhost:\${PORT}/admin/login\`);
-    console.log(\`📊 Panel Admin: http://localhost:\${PORT}/admin/afiliados\`);
-    console.log(\`🔍 Health Check: http://localhost:\${PORT}/api/health\`);
-    console.log(\`🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO\`);
-    console.log(\`🏢 Aliado estratégico: Indreima Seguros\`);
+    console.log('🎉 Servidor Salud Total EPS ejecutándose en puerto ' + PORT);
+    console.log('📱 Formulario: http://localhost:' + PORT);
+    console.log('🔐 Login Admin: http://localhost:' + PORT + '/admin/login');
+    console.log('📊 Panel Admin: http://localhost:' + PORT + '/admin/afiliados');
+    console.log('🔍 Health Check: http://localhost:' + PORT + '/api/health');
+    console.log('🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO');
+    console.log('🏢 Aliado estratégico: Indreima Seguros');
     
     createTableIfNotExists();
 });
