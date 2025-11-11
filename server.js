@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 10000;
 // 🔐 CONFIGURACIÓN DE SEGURIDAD Y AUTENTICACIÓN
 // ==============================================
 
-// Middleware de sesión
 app.use(session({
     secret: process.env.SESSION_SECRET || 'salud-total-indreima-session-2024',
     resave: false,
@@ -20,7 +19,7 @@ app.use(session({
     cookie: {
         secure: false,
         httpOnly: true,
-        maxAge: 2 * 60 * 60 * 1000 // 2 horas
+        maxAge: 2 * 60 * 60 * 1000
     }
 }));
 
@@ -34,7 +33,6 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// ✅ FUNCIÓN PARA CREAR LA TABLA SI NO EXISTE
 async function createTableIfNotExists() {
     try {
         console.log('🔍 Verificando si existe la tabla affiliates...');
@@ -101,17 +99,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ==============================================
-// 🎨 FUNCIÓN PARA GENERAR HEADER CON LOGO EXACTO
+// 🎨 FUNCIONES DE DISEÑO MEJORADAS
 // ==============================================
 
-function generateHeader(title) {
+function generateHeader(title, showLogo = true) {
     return `
     <header class="main-header">
         <div class="header-container">
+            ${showLogo ? `
             <div class="logo-section">
-                <div class="logo">Indreima</div>
-                <div class="logo-subtitle">s e g u r o s</div>
+                <div class="logo-image">
+                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+                         alt="Salud Total EPS" 
+                         class="logo-img">
+                </div>
+                <div class="logo-text">
+                    <div class="logo-main">Salud Total</div>
+                    <div class="logo-subtitle">EPS • Indreima Seguros</div>
+                </div>
             </div>
+            ` : ''}
             <h1 class="page-title">${title}</h1>
         </div>
     </header>`;
@@ -121,7 +128,7 @@ function generateHeader(title) {
 // 🚀 RUTAS DE LA APLICACIÓN
 // ==============================================
 
-// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN SALUD TOTAL EPS
+// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN MEJORADO
 app.get('/', (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -138,16 +145,18 @@ app.get('/', (req, res) => {
                 --primary-green: #00A859;
                 --primary-gold: #d4af37;
                 --primary-dark: #1a1a1a;
-                --light-bg: #f0f7ff;
+                --light-bg: #f8fafc;
                 --white: #ffffff;
                 --gray-light: #f1f5f9;
                 --gray: #64748b;
                 --dark: #1e293b;
-                --border-radius: 12px;
-                --border-radius-lg: 20px;
+                --border-radius: 16px;
+                --border-radius-lg: 24px;
                 --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
                 --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
-                --transition: all 0.3s ease;
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+                --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             }
 
             * {
@@ -158,13 +167,14 @@ app.get('/', (req, res) => {
 
             body {
                 font-family: 'Inter', sans-serif;
-                background: linear-gradient(135deg, var(--light-bg) 0%, var(--white) 100%);
+                background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
                 min-height: 100vh;
                 color: var(--dark);
                 line-height: 1.6;
+                overflow-x: hidden;
             }
 
-            /* HEADER ESTILOS ACTUALIZADOS */
+            /* HEADER MEJORADO */
             .main-header {
                 background: var(--white);
                 border-bottom: 3px solid var(--primary-gold);
@@ -172,6 +182,7 @@ app.get('/', (req, res) => {
                 position: sticky;
                 top: 0;
                 z-index: 1000;
+                backdrop-filter: blur(10px);
             }
 
             .header-container {
@@ -181,33 +192,62 @@ app.get('/', (req, res) => {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                animation: slideDown 0.5s ease-out;
             }
 
             .logo-section {
                 display: flex;
-                align-items: baseline;
-                gap: 8px;
+                align-items: center;
+                gap: 1rem;
             }
 
-            .logo {
-                font-size: 2rem;
+            .logo-image {
+                width: 60px;
+                height: 60px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                transition: var(--transition);
+            }
+
+            .logo-image:hover {
+                transform: scale(1.05);
+                box-shadow: 0 12px 30px rgba(0, 85, 164, 0.2);
+            }
+
+            .logo-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .logo-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .logo-main {
+                font-size: 1.5rem;
                 font-weight: 800;
-                color: var(--primary-dark);
-                letter-spacing: -1px;
+                color: var(--primary-blue);
+                letter-spacing: -0.5px;
             }
 
             .logo-subtitle {
-                font-size: 0.9rem;
-                font-weight: 500;
-                color: var(--primary-gold);
-                text-transform: lowercase;
-                letter-spacing: 4px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--primary-green);
+                letter-spacing: 1px;
             }
 
             .page-title {
                 font-size: 1.5rem;
-                font-weight: 600;
+                font-weight: 700;
                 color: var(--primary-blue);
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
             }
 
             .main-container {
@@ -216,89 +256,148 @@ app.get('/', (req, res) => {
                 padding: 2rem;
             }
 
+            /* HERO SECTION MEJORADA */
             .hero-section {
                 text-align: center;
                 margin-bottom: 3rem;
-                padding: 3rem 2rem;
-                background: linear-gradient(135deg, var(--white) 0%, var(--light-bg) 100%);
-                border-radius: var(--border-radius-lg);
-                box-shadow: var(--shadow);
-                border-left: 4px solid var(--primary-green);
-            }
-
-            .hero-title {
-                font-size: 2.5rem;
-                font-weight: 700;
-                color: var(--primary-blue);
-                margin-bottom: 1rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1.1rem;
-                color: var(--gray);
-                max-width: 600px;
-                margin: 0 auto;
-            }
-
-            .eps-badge {
-                display: inline-block;
-                background: var(--primary-green);
-                color: white;
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                font-size: 0.9rem;
-                font-weight: 600;
-                margin-top: 1rem;
-            }
-
-            .form-container {
+                padding: 4rem 2rem;
                 background: var(--white);
                 border-radius: var(--border-radius-lg);
                 box-shadow: var(--shadow-lg);
-                padding: 3rem;
-                margin-bottom: 2rem;
-                border-top: 4px solid var(--primary-blue);
+                position: relative;
+                overflow: hidden;
+                animation: fadeInUp 0.8s ease-out;
             }
 
-            .form-header {
+            .hero-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--gradient-primary);
+            }
+
+            .hero-title {
+                font-size: 3rem;
+                font-weight: 800;
+                background: var(--gradient-hero);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 1rem;
+                animation: fadeInUp 0.8s ease-out 0.2s both;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+                color: var(--gray);
+                max-width: 600px;
+                margin: 0 auto 2rem;
+                animation: fadeInUp 0.8s ease-out 0.4s both;
+            }
+
+            .hero-features {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1.5rem;
+                margin-top: 2rem;
+                animation: fadeInUp 0.8s ease-out 0.6s both;
+            }
+
+            .feature-card {
+                background: var(--light-bg);
+                padding: 1.5rem;
+                border-radius: var(--border-radius);
                 text-align: center;
-                margin-bottom: 2rem;
+                transition: var(--transition);
             }
 
-            .form-icon {
-                width: 80px;
-                height: 80px;
-                background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            .feature-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow);
+            }
+
+            .feature-icon {
+                width: 60px;
+                height: 60px;
+                background: var(--gradient-primary);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 margin: 0 auto 1rem;
                 color: var(--white);
+                font-size: 1.5rem;
+            }
+
+            /* FORM CONTAINER MEJORADO */
+            .form-container {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                box-shadow: var(--shadow-lg);
+                padding: 3rem;
+                margin-bottom: 2rem;
+                position: relative;
+                overflow: hidden;
+                animation: fadeInUp 0.8s ease-out 0.8s both;
+            }
+
+            .form-container::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--gradient-primary);
+            }
+
+            .form-header {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+
+            .form-icon {
+                width: 80px;
+                height: 80px;
+                background: var(--gradient-primary);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.5rem;
+                color: var(--white);
                 font-size: 2rem;
+                animation: bounceIn 1s ease-out;
             }
 
             .form-title {
-                font-size: 1.8rem;
-                font-weight: 700;
-                color: var(--primary-blue);
+                font-size: 2.2rem;
+                font-weight: 800;
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
                 margin-bottom: 0.5rem;
             }
 
             .form-subtitle {
                 color: var(--gray);
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
 
             .form-grid {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 gap: 1.5rem;
                 margin-bottom: 2rem;
             }
 
             .form-group {
                 position: relative;
+                animation: fadeIn 0.6s ease-out;
             }
 
             .form-group.full-width {
@@ -335,8 +434,8 @@ app.get('/', (req, res) => {
 
             .form-input {
                 width: 100%;
-                padding: 1rem 1rem 1rem 3rem;
-                background: var(--gray-light);
+                padding: 1.2rem 1rem 1.2rem 3rem;
+                background: var(--light-bg);
                 border: 2px solid #e2e8f0;
                 border-radius: var(--border-radius);
                 font-size: 1rem;
@@ -350,18 +449,26 @@ app.get('/', (req, res) => {
                 border-color: var(--primary-blue);
                 background: var(--white);
                 box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
+                transform: translateY(-2px);
             }
 
             .form-input:focus + .input-icon {
                 color: var(--primary-blue);
+                transform: translateY(-50%) scale(1.1);
             }
 
             .checkbox-group {
                 background: var(--light-bg);
-                padding: 1.5rem;
+                padding: 2rem;
                 border-radius: var(--border-radius);
                 border: 2px solid #e2e8f0;
                 margin: 2rem 0;
+                transition: var(--transition);
+            }
+
+            .checkbox-group:focus-within {
+                border-color: var(--primary-blue);
+                box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
             }
 
             .checkbox-item {
@@ -369,6 +476,11 @@ app.get('/', (req, res) => {
                 align-items: flex-start;
                 margin-bottom: 1rem;
                 cursor: pointer;
+                transition: var(--transition);
+            }
+
+            .checkbox-item:hover {
+                transform: translateX(5px);
             }
 
             .checkbox-input {
@@ -388,6 +500,7 @@ app.get('/', (req, res) => {
                 color: var(--primary-blue);
                 text-decoration: none;
                 font-weight: 600;
+                transition: var(--transition);
             }
 
             .checkbox-label a:hover {
@@ -401,24 +514,41 @@ app.get('/', (req, res) => {
 
             .submit-btn {
                 width: 100%;
-                padding: 1.2rem;
-                background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+                padding: 1.4rem;
+                background: var(--gradient-primary);
                 color: var(--white);
                 border: none;
                 border-radius: var(--border-radius);
                 font-size: 1.1rem;
-                font-weight: 600;
+                font-weight: 700;
                 cursor: pointer;
                 transition: var(--transition);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 0.5rem;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .submit-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: 0.5s;
             }
 
             .submit-btn:hover:not(:disabled) {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
+                transform: translateY(-3px);
+                box-shadow: 0 12px 30px rgba(0, 85, 164, 0.4);
+            }
+
+            .submit-btn:hover:not(:disabled)::before {
+                left: 100%;
             }
 
             .submit-btn:disabled {
@@ -429,11 +559,12 @@ app.get('/', (req, res) => {
 
             .message-box {
                 margin-top: 1rem;
-                padding: 1rem;
+                padding: 1.2rem;
                 border-radius: var(--border-radius);
                 text-align: center;
                 display: none;
                 font-weight: 600;
+                animation: slideInDown 0.5s ease-out;
             }
 
             .success {
@@ -458,8 +589,9 @@ app.get('/', (req, res) => {
                 background: var(--primary-blue);
                 color: var(--white);
                 text-align: center;
-                padding: 2rem;
-                margin-top: 3rem;
+                padding: 3rem 2rem;
+                margin-top: 4rem;
+                position: relative;
             }
 
             .footer-content {
@@ -469,9 +601,10 @@ app.get('/', (req, res) => {
 
             .partner-info {
                 background: rgba(255, 255, 255, 0.1);
-                padding: 1rem;
+                padding: 1.5rem;
                 border-radius: var(--border-radius);
-                margin: 1rem 0;
+                margin: 1.5rem 0;
+                backdrop-filter: blur(10px);
             }
 
             .admin-link {
@@ -479,19 +612,93 @@ app.get('/', (req, res) => {
                 text-decoration: none;
                 font-weight: 600;
                 margin-top: 1rem;
-                display: inline-block;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: var(--transition);
+                padding: 0.8rem 1.5rem;
+                border: 2px solid var(--primary-gold);
+                border-radius: var(--border-radius);
             }
 
             .admin-link:hover {
-                text-decoration: underline;
+                background: var(--primary-gold);
+                color: var(--primary-blue);
+                transform: translateY(-2px);
             }
 
+            /* ANIMACIONES */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes slideInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes bounceIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.3);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1.05);
+                }
+                70% {
+                    transform: scale(0.9);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            /* RESPONSIVE */
             @media (max-width: 768px) {
                 .header-container {
                     padding: 1rem;
                     flex-direction: column;
                     gap: 1rem;
                     text-align: center;
+                }
+
+                .logo-section {
+                    justify-content: center;
                 }
 
                 .form-grid {
@@ -503,25 +710,172 @@ app.get('/', (req, res) => {
                 }
 
                 .form-container {
-                    padding: 1.5rem;
+                    padding: 2rem 1.5rem;
                 }
 
                 .hero-title {
-                    font-size: 2rem;
+                    font-size: 2.2rem;
+                }
+
+                .form-title {
+                    font-size: 1.8rem;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .hero-section {
+                    padding: 2rem 1rem;
+                margin-bottom: 2rem;
+                margin-top: 1rem;
+                border-radius: 16px;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+                position: relative;
+                overflow: hidden;
+                border: 1px solid #e2e8f0;
+                text-align: center;
+                animation: fadeInUp 0.8s ease-out;
+                min-height: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+                .hero-title {
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #0055A4 0%, #00A859 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    margin-bottom: 0.8rem;
+                    line-height: 1.2;
+                    text-align: center;
+                    padding: 0 0.5rem;
+                }
+
+                .hero-subtitle {
+                    font-size: 1rem;
+                    color: #64748b;
+                    line-height: 1.5;
+                    margin-bottom: 1.5rem;
+                    text-align: center;
+                    padding: 0 0.5rem;
+                    max-width: 100%;
+                }
+
+                .hero-features {
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                    width: 100%;
+                    max-width: 300px;
+                    margin: 1rem auto 0;
+                }
+
+                .feature-card {
+                    padding: 1.2rem;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.8);
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                }
+
+                .feature-icon {
+                    width: 50px;
+                    height: 50px;
+                    font-size: 1.2rem;
+                }
+
+                .form-container {
+                    margin: 0;
+                    border-radius: 16px 16px 0 0;
+                    padding: 1.5rem 1rem;
+                    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-bottom: none;
+                }
+
+                .form-title {
+                    font-size: 1.5rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .form-subtitle {
+                    font-size: 0.9rem;
+                }
+
+                .form-input {
+                    padding: 1rem 1rem 1rem 2.8rem;
+                    font-size: 16px; /* Previene zoom en iOS */
+                }
+
+                .checkbox-group {
+                    padding: 1.2rem;
+                    margin: 1.5rem 0;
+                }
+
+                .checkbox-label {
+                    font-size: 0.8rem;
+                }
+
+                .submit-btn {
+                    padding: 1.2rem;
+                    font-size: 1rem;
+                    margin-bottom: 1rem;
+                }
+
+                .main-footer {
+                    padding: 2rem 1rem;
+                    margin-top: 2rem;
+                    border-radius: 16px 16px 0 0;
+                }
+
+                .partner-info {
+                    padding: 1rem;
+                    margin: 1rem 0;
+                }
+
+                .admin-link {
+                    width: 100%;
+                    justify-content: center;
+                    margin-top: 1rem;
                 }
             }
         </style>
     </head>
     <body>
-        ${generateHeader('Sistema de Afiliación')}
+        ${generateHeader('Sistema de Afiliación Digital')}
 
         <div class="main-container">
             <div class="hero-section">
                 <h1 class="hero-title">Salud Total EPS</h1>
-                <p class="hero-subtitle">Más de 25 años cuidando la salud de los colombianos. Afíliate a la EPS con cobertura nacional y servicios de calidad.</p>
-                <div class="eps-badge">
-                    <i class="fas fa-shield-alt"></i>
-                    EPS Oficial - Régimen Contributivo
+                <p class="hero-subtitle">Más de 25 años cuidando la salud de los colombianos. Afíliate de forma rápida y segura a la EPS con cobertura nacional.</p>
+                
+                <div class="hero-features">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Seguro</h3>
+                        <p>Datos protegidos</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Rápido</h3>
+                        <p>Proceso inmediato</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h3>Cobertura</h3>
+                        <p>Nacional</p>
+                    </div>
                 </div>
             </div>
 
@@ -531,7 +885,7 @@ app.get('/', (req, res) => {
                         <i class="fas fa-file-medical"></i>
                     </div>
                     <h2 class="form-title">Formulario de Afiliación</h2>
-                    <p class="form-subtitle">Registro oficial en el Sistema General de Seguridad Social en Salud</p>
+                    <p class="form-subtitle">Complete sus datos para el registro oficial en el Sistema General de Seguridad Social en Salud</p>
                 </div>
 
                 <form id="affiliate-form">
@@ -766,8 +1120,29 @@ app.get('/', (req, res) => {
 
             document.getElementById('fecha_nacimiento').max = new Date().toISOString().split('T')[0];
 
+            // Animaciones al hacer scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.form-group').forEach((el, index) => {
+                el.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s both`;
+                el.style.animationPlayState = 'paused';
+                observer.observe(el);
+            });
+
             console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
             console.log('🛡️  Aliado estratégico: Indreima Seguros');
+            console.log('🎨 Diseño mejorado con animaciones');
         </script>
     </body>
     </html>`;
@@ -775,9 +1150,9 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
-// [El resto del código permanece igual...]
+// [Las demás rutas (login, admin, APIs) permanecen igual que en tu código original...]
 
-// ✅ RUTA DE LOGIN
+// ✅ RUTA DE LOGIN (MEJORADA)
 app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -787,7 +1162,26 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Acceso Administrativo - Salud Total EPS</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
+            :root {
+                --primary-blue: #0055A4;
+                --primary-green: #00A859;
+                --primary-gold: #d4af37;
+                --primary-dark: #1a1a1a;
+                --light-bg: #f8fafc;
+                --white: #ffffff;
+                --gray-light: #f1f5f9;
+                --gray: #64748b;
+                --dark: #1e293b;
+                --border-radius: 16px;
+                --border-radius-lg: 24px;
+                --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            }
+
             * {
                 margin: 0;
                 padding: 0;
@@ -796,7 +1190,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             }
             
             body {
-                background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
+                background: linear-gradient(135deg, var(--primary-blue) 0%, #003366 100%);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
@@ -809,7 +1203,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             .main-header {
                 background: rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(10px);
-                border-bottom: 3px solid #d4af37;
+                border-bottom: 3px solid var(--primary-gold);
                 width: 100%;
                 position: fixed;
                 top: 0;
@@ -827,51 +1221,86 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
 
             .logo-section {
                 display: flex;
-                align-items: baseline;
-                gap: 8px;
+                align-items: center;
+                gap: 1rem;
             }
 
-            .logo {
-                font-size: 2rem;
+            .logo-image {
+                width: 50px;
+                height: 50px;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+            }
+
+            .logo-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .logo-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .logo-main {
+                font-size: 1.3rem;
                 font-weight: 800;
                 color: #ffffff;
-                letter-spacing: -1px;
+                letter-spacing: -0.5px;
             }
 
             .logo-subtitle {
-                font-size: 0.9rem;
-                font-weight: 500;
-                color: #d4af37;
-                text-transform: lowercase;
-                letter-spacing: 4px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: var(--primary-gold);
+                letter-spacing: 1px;
             }
 
             .login-container {
                 background: rgba(255, 255, 255, 0.95);
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                border-radius: var(--border-radius-lg);
+                box-shadow: var(--shadow-lg);
                 overflow: hidden;
                 width: 100%;
                 max-width: 450px;
                 margin-top: 2rem;
-                color: #1a1a1a;
+                color: var(--dark);
+                animation: fadeInUp 0.8s ease-out;
+                backdrop-filter: blur(10px);
             }
             
             .login-header {
-                background: linear-gradient(135deg, #0055A4, #003366);
+                background: var(--gradient-primary);
                 color: white;
                 padding: 3rem 2rem;
                 text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .login-header::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+                animation: shine 3s infinite;
             }
             
             .login-header h1 {
                 font-size: 1.8rem;
                 margin-bottom: 0.5rem;
+                position: relative;
             }
             
             .login-header p {
                 opacity: 0.9;
                 font-size: 0.9rem;
+                position: relative;
             }
             
             .login-body {
@@ -880,28 +1309,30 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
             
             .security-notice {
                 background: #f0f7ff;
-                border: 1px solid #0055A4;
-                border-radius: 12px;
+                border: 1px solid var(--primary-blue);
+                border-radius: var(--border-radius);
                 padding: 1.5rem;
                 margin-bottom: 2rem;
                 text-align: center;
+                animation: fadeIn 0.6s ease-out 0.3s both;
             }
             
             .security-notice i {
-                color: #0055A4;
+                color: var(--primary-blue);
                 font-size: 1.5rem;
                 margin-bottom: 0.5rem;
                 display: block;
             }
             
             .security-notice p {
-                color: #0055A4;
+                color: var(--primary-blue);
                 font-size: 0.9rem;
                 font-weight: 600;
             }
             
             .form-group {
                 margin-bottom: 1.5rem;
+                animation: fadeIn 0.6s ease-out 0.4s both;
             }
             
             .form-label {
@@ -922,40 +1353,60 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 top: 50%;
                 transform: translateY(-50%);
                 color: #6b7280;
+                transition: var(--transition);
             }
             
             .form-input {
                 width: 100%;
-                padding: 1rem 1rem 1rem 3rem;
+                padding: 1.2rem 1rem 1.2rem 3rem;
                 border: 2px solid #e5e7eb;
-                border-radius: 12px;
+                border-radius: var(--border-radius);
                 font-size: 1rem;
-                transition: all 0.3s ease;
-                background: #f8fafc;
+                transition: var(--transition);
+                background: var(--light-bg);
             }
             
             .form-input:focus {
                 outline: none;
-                border-color: #0055A4;
+                border-color: var(--primary-blue);
                 background: white;
                 box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
+                transform: translateY(-2px);
+            }
+            
+            .form-input:focus + .input-icon {
+                color: var(--primary-blue);
+                transform: translateY(-50%) scale(1.1);
             }
             
             .login-btn {
                 width: 100%;
                 padding: 1.2rem;
-                background: linear-gradient(135deg, #0055A4, #003366);
+                background: var(--gradient-primary);
                 color: white;
                 border: none;
-                border-radius: 12px;
+                border-radius: var(--border-radius);
                 font-size: 1.1rem;
                 font-weight: 600;
                 cursor: pointer;
-                transition: all 0.3s ease;
+                transition: var(--transition);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 0.5rem;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .login-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: 0.5s;
             }
             
             .login-btn:hover {
@@ -963,30 +1414,24 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
             }
             
-            .login-btn:active {
-                transform: translateY(0);
+            .login-btn:hover::before {
+                left: 100%;
             }
             
             .error-message {
                 background: #fee2e2;
                 color: #dc2626;
                 padding: 1rem;
-                border-radius: 12px;
+                border-radius: var(--border-radius);
                 margin-bottom: 1.5rem;
                 text-align: center;
                 display: none;
                 border: 1px solid #fecaca;
+                animation: slideInDown 0.5s ease-out;
             }
             
             .error-message.show {
                 display: block;
-                animation: shake 0.5s ease;
-            }
-            
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
             }
             
             .footer-info {
@@ -994,6 +1439,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 margin-top: 2rem;
                 padding-top: 2rem;
                 border-top: 1px solid #e5e7eb;
+                animation: fadeIn 0.6s ease-out 0.5s both;
             }
             
             .footer-info p {
@@ -1006,15 +1452,85 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.5rem;
-                color: #0055A4;
+                color: var(--primary-blue);
                 text-decoration: none;
                 font-weight: 600;
                 margin-top: 1rem;
                 font-size: 0.9rem;
+                transition: var(--transition);
+                padding: 0.8rem 1.5rem;
+                border: 2px solid var(--primary-blue);
+                border-radius: var(--border-radius);
             }
             
             .back-link:hover {
-                text-decoration: underline;
+                background: var(--primary-blue);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes shine {
+                0% {
+                    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+                }
+                100% {
+                    transform: translateX(100%) translateY(100%) rotate(45deg);
+                }
+            }
+
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            
+            @media (max-width: 768px) {
+                body {
+                    padding: 1rem;
+                }
+                
+                .login-container {
+                    margin-top: 1rem;
+                }
+                
+                .login-header {
+                    padding: 2rem 1.5rem;
+                }
+                
+                .login-body {
+                    padding: 2rem 1.5rem;
+                }
             }
         </style>
     </head>
@@ -1128,7 +1644,7 @@ app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
     res.send(html);
 });
 
-// [El resto del código del servidor permanece igual...]
+// [El resto de las rutas (APIs, admin panel, etc.) permanecen igual que en tu código original]
 
 // ✅ RUTA PARA PROCESAR LOGIN
 app.post('/admin/auth/login', (req, res) => {
@@ -1171,7 +1687,7 @@ app.post('/admin/auth/logout', requireAuth, (req, res) => {
     });
 });
 
-// ✅ RUTA PARA PROCESAR EL FORMULARIO (pública)
+// ✅ RUTA PARA PROCESAR EL FORMULARIO
 app.post('/api/formulario/solicitud', async (req, res) => {
     try {
         await createTableIfNotExists();
@@ -1239,7 +1755,7 @@ app.post('/api/formulario/solicitud', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA ELIMINAR UN AFILIADO (protegida)
+// ✅ RUTA PARA ELIMINAR UN AFILIADO
 app.delete('/api/afiliados/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1275,7 +1791,7 @@ app.delete('/api/afiliados/:id', requireAuth, async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL (protegida)
+// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL
 app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
     try {
         await createTableIfNotExists();
@@ -1329,7 +1845,7 @@ app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
     }
 });
 
-// ✅ RUTA DEL PANEL DE ADMINISTRACIÓN (protegida)
+// ✅ RUTA DEL PANEL DE ADMINISTRACIÓN (MEJORADA)
 app.get('/admin/afiliados', requireAuth, async (req, res) => {
     try {
         await createTableIfNotExists();
@@ -1344,7 +1860,26 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Panel de Administración - Salud Total EPS</title>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
             <style>
+                :root {
+                    --primary-blue: #0055A4;
+                    --primary-green: #00A859;
+                    --primary-gold: #d4af37;
+                    --primary-dark: #1a1a1a;
+                    --light-bg: #f8fafc;
+                    --white: #ffffff;
+                    --gray-light: #f1f5f9;
+                    --gray: #64748b;
+                    --dark: #1e293b;
+                    --border-radius: 16px;
+                    --border-radius-lg: 24px;
+                    --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                    --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+                }
+
                 * {
                     margin: 0;
                     padding: 0;
@@ -1353,19 +1888,20 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 body {
-                    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+                    background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
                     min-height: 100vh;
                     padding: 0;
-                    color: #1a1a1a;
+                    color: var(--dark);
                 }
 
                 .main-header {
-                    background: #ffffff;
-                    border-bottom: 3px solid #d4af37;
-                    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+                    background: var(--white);
+                    border-bottom: 3px solid var(--primary-gold);
+                    box-shadow: var(--shadow);
                     position: sticky;
                     top: 0;
                     z-index: 1000;
+                    backdrop-filter: blur(10px);
                 }
 
                 .header-container {
@@ -1379,23 +1915,41 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
 
                 .logo-section {
                     display: flex;
-                    align-items: baseline;
-                    gap: 8px;
+                    align-items: center;
+                    gap: 1rem;
                 }
 
-                .logo {
-                    font-size: 2rem;
+                .logo-image {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: var(--shadow);
+                }
+
+                .logo-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .logo-text {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .logo-main {
+                    font-size: 1.3rem;
                     font-weight: 800;
-                    color: #1a1a1a;
-                    letter-spacing: -1px;
+                    color: var(--primary-dark);
+                    letter-spacing: -0.5px;
                 }
 
                 .logo-subtitle {
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                    color: #d4af37;
-                    text-transform: lowercase;
-                    letter-spacing: 4px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    color: var(--primary-green);
+                    letter-spacing: 1px;
                 }
 
                 .session-info {
@@ -1409,28 +1963,31 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     background: #dc2626;
                     color: white;
                     border: none;
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
+                    padding: 0.8rem 1.2rem;
+                    border-radius: var(--border-radius);
                     cursor: pointer;
                     font-size: 0.8rem;
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
-                    transition: all 0.3s ease;
+                    transition: var(--transition);
+                    font-weight: 600;
                 }
                 
                 .logout-btn:hover {
                     background: #b91c1c;
                     transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
                 }
                 
                 .security-badge {
                     background: #f0f7ff;
-                    color: #0055A4;
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
+                    color: var(--primary-blue);
+                    padding: 0.8rem 1.2rem;
+                    border-radius: var(--border-radius);
                     font-size: 0.8rem;
                     border: 1px solid #bfdbfe;
+                    font-weight: 600;
                 }
 
                 .admin-container {
@@ -1440,69 +1997,106 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .admin-header {
-                    background: linear-gradient(135deg, #0055A4 0%, #003366 100%);
+                    background: var(--gradient-primary);
                     color: white;
                     padding: 3rem 2rem;
                     text-align: center;
-                    border-radius: 20px;
+                    border-radius: var(--border-radius-lg);
                     margin-bottom: 2rem;
+                    position: relative;
+                    overflow: hidden;
+                    animation: fadeInUp 0.8s ease-out;
+                }
+                
+                .admin-header::before {
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+                    animation: shine 3s infinite;
                 }
                 
                 .admin-header h1 {
                     font-size: 2.5rem;
                     margin-bottom: 1rem;
+                    position: relative;
                 }
                 
                 .admin-header p {
                     opacity: 0.9;
                     font-size: 1.1rem;
+                    position: relative;
                 }
                 
                 .partner-notice {
                     background: rgba(255, 255, 255, 0.1);
                     padding: 1rem;
-                    border-radius: 8px;
+                    border-radius: var(--border-radius);
                     margin-top: 1rem;
                     font-size: 0.9rem;
+                    backdrop-filter: blur(10px);
+                    position: relative;
                 }
                 
                 .stats-container {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                     gap: 1.5rem;
                     padding: 2rem;
-                    background: #ffffff;
-                    border-radius: 20px;
-                    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+                    background: var(--white);
+                    border-radius: var(--border-radius-lg);
+                    box-shadow: var(--shadow);
                     margin-bottom: 2rem;
+                    animation: fadeInUp 0.8s ease-out 0.2s both;
                 }
                 
                 .stat-card {
-                    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+                    background: linear-gradient(135deg, var(--white) 0%, var(--light-bg) 100%);
                     padding: 2rem;
-                    border-radius: 16px;
+                    border-radius: var(--border-radius);
                     text-align: center;
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                    border-left: 4px solid #0055A4;
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    box-shadow: var(--shadow);
+                    border-left: 4px solid var(--primary-blue);
+                    transition: var(--transition);
                     cursor: pointer;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .stat-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: var(--gradient-primary);
+                    transform: scaleX(0);
+                    transition: var(--transition);
                 }
                 
                 .stat-card:hover {
                     transform: translateY(-5px);
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                    box-shadow: var(--shadow-lg);
+                }
+                
+                .stat-card:hover::before {
+                    transform: scaleX(1);
                 }
                 
                 .stat-card.excel {
-                    background: linear-gradient(135deg, #00A859, #008046);
+                    background: var(--gradient-primary);
                     color: white;
-                    border-left: 4px solid #00A859;
+                    border-left: 4px solid var(--primary-green);
                 }
                 
                 .stat-number {
                     font-size: 2.5rem;
                     font-weight: bold;
-                    color: #0055A4;
+                    color: var(--primary-blue);
                     margin-bottom: 0.5rem;
                 }
                 
@@ -1511,10 +2105,11 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .stat-label {
-                    color: #64748b;
+                    color: var(--gray);
                     font-size: 0.9rem;
                     text-transform: uppercase;
                     letter-spacing: 1px;
+                    font-weight: 600;
                 }
                 
                 .stat-card.excel .stat-label {
@@ -1524,20 +2119,21 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 .data-table {
                     padding: 0 0 2rem 0;
                     overflow-x: auto;
+                    animation: fadeInUp 0.8s ease-out 0.4s both;
                 }
                 
                 table {
                     width: 100%;
                     border-collapse: collapse;
                     background: white;
-                    border-radius: 16px;
+                    border-radius: var(--border-radius);
                     overflow: hidden;
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    box-shadow: var(--shadow);
                     min-width: 1000px;
                 }
                 
                 th {
-                    background: #0055A4;
+                    background: var(--primary-blue);
                     color: white;
                     padding: 1.2rem;
                     text-align: left;
@@ -1549,17 +2145,20 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     padding: 1rem 1.2rem;
                     border-bottom: 1px solid #e2e8f0;
                     font-size: 0.85rem;
+                    transition: var(--transition);
                 }
                 
                 tr:hover {
-                    background: #f0f7ff;
+                    background: var(--light-bg);
+                    transform: scale(1.01);
                 }
                 
                 .badge {
                     padding: 0.4rem 0.8rem;
-                    border-radius: 12px;
+                    border-radius: 20px;
                     font-size: 0.7rem;
                     font-weight: 600;
+                    display: inline-block;
                 }
                 
                 .badge-success {
@@ -1580,11 +2179,11 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 .btn {
                     padding: 0.5rem 1rem;
                     border: none;
-                    border-radius: 8px;
+                    border-radius: var(--border-radius);
                     cursor: pointer;
                     font-size: 0.75rem;
                     font-weight: 600;
-                    transition: all 0.3s ease;
+                    transition: var(--transition);
                     display: flex;
                     align-items: center;
                     gap: 0.3rem;
@@ -1598,53 +2197,73 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 .btn-delete:hover {
                     background: #dc2626;
                     transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
                 }
                 
                 .empty-state {
                     text-align: center;
                     padding: 4rem 2rem;
-                    color: #64748b;
+                    color: var(--gray);
+                    animation: fadeIn 0.8s ease-out;
                 }
                 
                 .empty-state i {
                     font-size: 3rem;
                     margin-bottom: 1rem;
-                    color: #0055A4;
+                    color: var(--primary-blue);
                 }
                 
                 .download-section {
                     text-align: center;
                     padding: 2rem;
-                    background: #ffffff;
-                    border-radius: 16px;
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                    background: var(--white);
+                    border-radius: var(--border-radius-lg);
+                    box-shadow: var(--shadow);
                     margin-top: 2rem;
+                    animation: fadeInUp 0.8s ease-out 0.6s both;
                 }
                 
                 .download-btn {
-                    background: linear-gradient(135deg, #00A859, #008046);
+                    background: var(--gradient-primary);
                     color: white;
                     border: none;
-                    padding: 1rem 2rem;
-                    border-radius: 12px;
+                    padding: 1.2rem 2.5rem;
+                    border-radius: var(--border-radius);
                     cursor: pointer;
                     font-size: 1rem;
                     font-weight: 600;
-                    transition: all 0.3s ease;
+                    transition: var(--transition);
                     display: inline-flex;
                     align-items: center;
                     gap: 0.5rem;
                     text-decoration: none;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .download-btn::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                    transition: 0.5s;
                 }
                 
                 .download-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(0, 168, 89, 0.3);
+                    transform: translateY(-3px);
+                    box-shadow: 0 12px 30px rgba(0, 85, 164, 0.4);
+                }
+                
+                .download-btn:hover::before {
+                    left: 100%;
                 }
                 
                 .download-info {
                     margin-top: 1rem;
-                    color: #64748b;
+                    color: var(--gray);
                     font-size: 0.9rem;
                 }
                 
@@ -1652,12 +2271,13 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                     position: fixed;
                     top: 2rem;
                     right: 2rem;
-                    padding: 1rem 1.5rem;
-                    border-radius: 12px;
+                    padding: 1.2rem 1.5rem;
+                    border-radius: var(--border-radius);
                     color: white;
                     font-weight: 600;
                     z-index: 1001;
                     animation: slideInRight 0.3s ease;
+                    box-shadow: var(--shadow-lg);
                 }
                 
                 @keyframes slideInRight {
@@ -1666,11 +2286,40 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                 }
                 
                 .notification.success {
-                    background: #00A859;
+                    background: var(--primary-green);
                 }
                 
                 .notification.error {
                     background: #dc2626;
+                }
+
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes shine {
+                    0% {
+                        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+                    }
+                    100% {
+                        transform: translateX(100%) translateY(100%) rotate(45deg);
+                    }
                 }
                 
                 @media (max-width: 768px) {
@@ -1691,6 +2340,11 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                         flex-direction: column;
                         gap: 1rem;
                         text-align: center;
+                    }
+                    
+                    .session-info {
+                        flex-direction: column;
+                        gap: 1rem;
                     }
                 }
             </style>
@@ -1747,7 +2401,7 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
                         <i class="fas fa-database"></i>
                         <h2>No hay afiliados registrados</h2>
                         <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
-                        <p style="margin-top: 20px; font-size: 0.9rem; color: #0055A4;">
+                        <p style="margin-top: 20px; font-size: 0.9rem; color: var(--primary-blue);">
                             <i class="fas fa-info-circle"></i>
                             ¡El sistema está listo! Los afiliados aparecerán aquí.
                         </p>
@@ -1889,22 +2543,17 @@ app.get('/admin/afiliados', requireAuth, async (req, res) => {
     }
 });
 
-// ✅ HEALTH CHECK (pública)
+// ✅ HEALTH CHECK
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
         message: '🏥 Salud Total EPS - Sistema funcionando correctamente',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
+        version: '2.0.0',
         status: 'operational',
         partnership: {
             aseguradora: 'Indreima Seguros',
             eps: 'Salud Total EPS'
-        },
-        security: {
-            authentication: true,
-            sessionManagement: true,
-            adminPanelProtected: true
         },
         features: {
             formularioAfiliacion: true,
@@ -1912,7 +2561,9 @@ app.get('/api/health', (req, res) => {
             baseDatos: true,
             panelAdmin: true,
             exportExcel: true,
-            loginSystem: true
+            loginSystem: true,
+            diseñoMejorado: true,
+            animaciones: true
         }
     });
 });
@@ -1929,11 +2580,11 @@ app.listen(PORT, () => {
     console.log('🔍 Health Check: http://localhost:' + PORT + '/api/health');
     console.log('🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO');
     console.log('🏢 Aliado estratégico: Indreima Seguros');
+    console.log('🎨 Diseño mejorado con animaciones e imagen corporativa');
     
     createTableIfNotExists();
 });
 
-// Manejo graceful de shutdown
 process.on('SIGTERM', () => {
     console.log('🛑 Recibido SIGTERM. Cerrando servidor gracefully...');
     process.exit(0);
