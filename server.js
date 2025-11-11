@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 10000;
 // ==============================================
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'salud-total-andreima-session-2024', // CORREGIDO
+    secret: process.env.SESSION_SECRET || 'salud-total-andreima-session-2024',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -131,7 +131,7 @@ function generateHeader(title, showLogo = true) {
                 </div>
                 <div class="logo-text" style="display: flex; flex-direction: column;">
                     <div class="logo-main" style="font-size: 1.5rem; font-weight: 800; color: #0055A4; letter-spacing: -0.5px;">Salud Total</div>
-                    <div class="logo-subtitle" style="font-size: 0.8rem; font-weight: 600; color: #00A859; letter-spacing: 1px;">EPS • Andreima Seguros</div> <!-- CORREGIDO -->
+                    <div class="logo-subtitle" style="font-size: 0.8rem; font-weight: 600; color: #00A859; letter-spacing: 1px;">EPS • Andreima Seguros</div>
                 </div>
             </div>
             ` : ''}
@@ -146,7 +146,7 @@ function generateHeader(title, showLogo = true) {
 // 🚀 RUTAS DE LA APLICACIÓN
 // ==============================================
 
-// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN (HEADER FIJADO)
+// ✅ RUTA PRINCIPAL - FORMULARIO DE AFILIACIÓN
 app.get('/', (req, res) => {
     const html = `
     <!DOCTYPE html>
@@ -158,7 +158,6 @@ app.get('/', (req, res) => {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
-            /* TUS ESTILOS ORIGINALES SE MANTIENEN */
             :root {
                 --primary-blue: #0055A4;
                 --primary-green: #00A859;
@@ -193,14 +192,13 @@ app.get('/', (req, res) => {
                 overflow-x: hidden;
             }
 
-            /* HEADER FIJADO - SOLO ESTO SE MODIFICÓ */
             .main-header {
                 background: var(--white);
                 border-bottom: 3px solid var(--primary-gold);
                 box-shadow: var(--shadow);
-                position: fixed; /* FIJADO */
+                position: fixed;
                 top: 0;
-                width: 100%; /* FIJADO */
+                width: 100%;
                 z-index: 1000;
                 backdrop-filter: blur(10px);
             }
@@ -269,14 +267,12 @@ app.get('/', (req, res) => {
                 background-clip: text;
             }
 
-            /* CONTENEDOR PRINCIPAL AJUSTADO PARA HEADER FIJADO */
             .main-container {
                 max-width: 1200px;
-                margin: 140px auto 0; /* AJUSTADO PARA HEADER FIJADO */
+                margin: 140px auto 0;
                 padding: 2rem;
             }
 
-            /* EL RESTO DE TUS ESTILOS ORIGINALES SE MANTIENEN INTACTOS */
             .hero-section {
                 text-align: center;
                 margin-bottom: 3rem;
@@ -623,7 +619,6 @@ app.get('/', (req, res) => {
                 transform: translateY(-2px);
             }
 
-            /* RESPONSIVE - AJUSTADO PARA HEADER FIJADO */
             @media (max-width: 768px) {
                 .header-container {
                     padding: 1rem;
@@ -637,7 +632,7 @@ app.get('/', (req, res) => {
                 }
 
                 .main-container {
-                    margin-top: 180px; /* AJUSTADO PARA MÓVIL */
+                    margin-top: 180px;
                     padding: 1rem;
                 }
 
@@ -660,7 +655,7 @@ app.get('/', (req, res) => {
 
             @media (max-width: 480px) {
                 .main-container {
-                    margin-top: 200px; /* AJUSTADO PARA MÓVIL PEQUEÑO */
+                    margin-top: 200px;
                 }
 
                 .hero-section {
@@ -745,7 +740,6 @@ app.get('/', (req, res) => {
         ${generateHeader('Sistema de Afiliación Digital')}
 
         <div class="main-container">
-            <!-- TODO TU CONTENIDO ORIGINAL SE MANTIENE -->
             <div class="hero-section">
                 <h1 class="hero-title">Salud Total EPS</h1>
                 <p class="hero-subtitle">Más de 25 años cuidando la salud de los colombianos. Afíliate de forma rápida y segura a la EPS con cobertura nacional.</p>
@@ -884,8 +878,8 @@ app.get('/', (req, res) => {
             <div class="footer-content">
                 <p>&copy; 2024 Salud Total EPS. Todos los derechos reservados.</p>
                 <div class="partner-info">
-                    <p><strong>Aliado estratégico:</strong> Andreima Seguros</p> <!-- CORREGIDO -->
-                    <p>Protegiendo tu salud con el respaldo de Andreima Seguros</p> <!-- CORREGIDO -->
+                    <p><strong>Aliado estratégico:</strong> Andreima Seguros</p>
+                    <p>Protegiendo tu salud con el respaldo de Andreima Seguros</p>
                 </div>
                 <a href="/admin/login" class="admin-link">
                     <i class="fas fa-lock"></i>
@@ -895,7 +889,6 @@ app.get('/', (req, res) => {
         </footer>
 
         <script>
-            // TODO TU JAVASCRIPT ORIGINAL SE MANTIENE
             const API_URL = '/api/formulario/solicitud';
 
             document.getElementById('openPrivacyPolicy')?.addEventListener('click', function(e) {
@@ -1018,7 +1011,7 @@ app.get('/', (req, res) => {
             document.getElementById('fecha_nacimiento').max = new Date().toISOString().split('T')[0];
 
             console.log('🏥 Salud Total EPS - Sistema de Afiliaciones');
-            console.log('🛡️  Aliado estratégico: Andreima Seguros'); // CORREGIDO
+            console.log('🛡️  Aliado estratégico: Andreima Seguros');
             console.log('📍 Header fijado correctamente');
         </script>
     </body>
@@ -1027,9 +1020,366 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
-// LAS DEMÁS RUTAS (login, admin, etc.) SE MANTIENEN IGUAL PERO CON "Andreima" CORREGIDO
+// ✅ RUTA DE LOGIN
+app.get('/admin/login', redirectIfAuthenticated, (req, res) => {
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Acceso Administrativo - Salud Total EPS</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --primary-blue: #0055A4;
+                --primary-green: #00A859;
+                --primary-gold: #d4af37;
+                --light-bg: #f8fafc;
+                --white: #ffffff;
+                --gray: #64748b;
+                --border-radius: 16px;
+                --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            }
 
-// ✅ RUTA PARA PROCESAR LOGIN (SOLO CORRECCIÓN DEL NOMBRE)
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Inter', sans-serif;
+            }
+            
+            body {
+                background: linear-gradient(135deg, var(--primary-blue) 0%, #003366 100%);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+                color: #fff;
+            }
+
+            .login-container {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow-lg);
+                overflow: hidden;
+                width: 100%;
+                max-width: 450px;
+                margin-top: 2rem;
+                color: #1e293b;
+                backdrop-filter: blur(10px);
+            }
+            
+            .login-header {
+                background: var(--gradient-primary);
+                color: white;
+                padding: 3rem 2rem;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .login-header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+                position: relative;
+            }
+            
+            .login-header p {
+                opacity: 0.9;
+                font-size: 0.9rem;
+                position: relative;
+            }
+            
+            .login-body {
+                padding: 3rem 2rem;
+            }
+            
+            .security-notice {
+                background: #f0f7ff;
+                border: 1px solid var(--primary-blue);
+                border-radius: var(--border-radius);
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+                text-align: center;
+            }
+            
+            .security-notice i {
+                color: var(--primary-blue);
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+            
+            .security-notice p {
+                color: var(--primary-blue);
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+            
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+            
+            .form-label {
+                display: block;
+                margin-bottom: 0.5rem;
+                color: #374151;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+            
+            .input-container {
+                position: relative;
+            }
+            
+            .input-icon {
+                position: absolute;
+                left: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #6b7280;
+                transition: var(--transition);
+            }
+            
+            .form-input {
+                width: 100%;
+                padding: 1.2rem 1rem 1.2rem 3rem;
+                border: 2px solid #e5e7eb;
+                border-radius: var(--border-radius);
+                font-size: 1rem;
+                transition: var(--transition);
+                background: var(--light-bg);
+            }
+            
+            .form-input:focus {
+                outline: none;
+                border-color: var(--primary-blue);
+                background: white;
+                box-shadow: 0 0 0 3px rgba(0, 85, 164, 0.1);
+                transform: translateY(-2px);
+            }
+            
+            .form-input:focus + .input-icon {
+                color: var(--primary-blue);
+                transform: translateY(-50%) scale(1.1);
+            }
+            
+            .login-btn {
+                width: 100%;
+                padding: 1.2rem;
+                background: var(--gradient-primary);
+                color: white;
+                border: none;
+                border-radius: var(--border-radius);
+                font-size: 1.1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: var(--transition);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .login-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(0, 85, 164, 0.3);
+            }
+            
+            .error-message {
+                background: #fee2e2;
+                color: #dc2626;
+                padding: 1rem;
+                border-radius: var(--border-radius);
+                margin-bottom: 1.5rem;
+                text-align: center;
+                display: none;
+                border: 1px solid #fecaca;
+            }
+            
+            .error-message.show {
+                display: block;
+            }
+            
+            .footer-info {
+                text-align: center;
+                margin-top: 2rem;
+                padding-top: 2rem;
+                border-top: 1px solid #e5e7eb;
+            }
+            
+            .footer-info p {
+                color: #6b7280;
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: var(--primary-blue);
+                text-decoration: none;
+                font-weight: 600;
+                margin-top: 1rem;
+                font-size: 0.9rem;
+                transition: var(--transition);
+                padding: 0.8rem 1.5rem;
+                border: 2px solid var(--primary-blue);
+                border-radius: var(--border-radius);
+            }
+            
+            .back-link:hover {
+                background: var(--primary-blue);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            
+            @media (max-width: 768px) {
+                body {
+                    padding: 1rem;
+                }
+                
+                .login-container {
+                    margin-top: 1rem;
+                }
+                
+                .login-header {
+                    padding: 2rem 1.5rem;
+                }
+                
+                .login-body {
+                    padding: 2rem 1.5rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        ${generateHeader('Acceso Administrativo')}
+
+        <div class="login-container">
+            <div class="login-header">
+                <h1><i class="fas fa-shield-alt"></i> Acceso Administrativo</h1>
+                <p>Salud Total EPS - Sistema de Afiliaciones</p>
+            </div>
+            
+            <div class="login-body">
+                <div class="security-notice">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>🔒 Zona restringida - Manejo de datos sensibles</p>
+                </div>
+                
+                <div id="errorMessage" class="error-message"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Usuario Administrativo</label>
+                        <div class="input-container">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" class="form-input" id="username" name="username" placeholder="Ingresa tu usuario" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <div class="input-container">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" class="form-input" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        INGRESAR AL SISTEMA
+                    </button>
+                </form>
+                
+                <div class="footer-info">
+                    <p>⏳ Sesión válida por 2 horas</p>
+                    <p>🛡️ Sistema protegido por Andreima Seguros</p>
+                    <a href="/" class="back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al formulario de afiliación
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const loginBtn = document.getElementById('loginBtn');
+                const errorMessage = document.getElementById('errorMessage');
+                const originalText = loginBtn.innerHTML;
+                
+                const formData = {
+                    username: document.getElementById('username').value.trim(),
+                    password: document.getElementById('password').value
+                };
+                
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFICANDO...';
+                errorMessage.classList.remove('show');
+                
+                try {
+                    const response = await fetch('/admin/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        window.location.href = '/admin/afiliados';
+                    } else {
+                        throw new Error(result.message);
+                    }
+                    
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.add('show');
+                    document.querySelector('.login-container').style.animation = 'shake 0.5s ease';
+                    setTimeout(() => {
+                        document.querySelector('.login-container').style.animation = '';
+                    }, 500);
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                }
+            });
+            
+            document.getElementById('username').addEventListener('input', function() {
+                document.getElementById('errorMessage').classList.remove('show');
+            });
+            
+            document.getElementById('password').addEventListener('input', function() {
+                document.getElementById('errorMessage').classList.remove('show');
+            });
+        </script>
+    </body>
+    </html>`;
+    
+    res.send(html);
+});
+
+// ✅ RUTA PARA PROCESAR LOGIN
 app.post('/admin/auth/login', (req, res) => {
     const { username, password } = req.body;
     
@@ -1059,7 +1409,734 @@ app.post('/admin/auth/login', (req, res) => {
     }
 });
 
-// ✅ HEALTH CHECK ACTUALIZADO
+// ✅ RUTA PARA LOGOUT
+app.post('/admin/auth/logout', requireAuth, (req, res) => {
+    console.log("🚪 Logout: " + req.session.user.username);
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: 'Error al cerrar sesión' });
+        }
+        res.json({ success: true, message: '✅ Sesión cerrada correctamente' });
+    });
+});
+
+// ✅ RUTA PARA PROCESAR EL FORMULARIO
+app.post('/api/formulario/solicitud', async (req, res) => {
+    try {
+        await createTableIfNotExists();
+        
+        const formData = req.body;
+        
+        console.log('📝 Datos recibidos del formulario:', formData);
+        
+        if (!formData.tratamiento_datos) {
+            return res.status(400).json({
+                success: false,
+                message: '❌ Debe autorizar OBLIGATORIAMENTE el tratamiento de datos personales para continuar con la afiliación al Sistema de Salud'
+            });
+        }
+        
+        const result = await pool.query(
+            'INSERT INTO affiliates (nombre, apellido, edad, tipo_documento, numero_documento, fecha_nacimiento, lugar_nacimiento, correo, tratamiento_datos, affiliate_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            [
+                formData.nombre,
+                formData.apellido,
+                formData.edad,
+                formData.tipo_documento,
+                formData.numero_documento,
+                formData.fecha_nacimiento,
+                formData.lugar_nacimiento,
+                formData.correo,
+                formData.tratamiento_datos,
+                'ST-' + Date.now()
+            ]
+        );
+
+        console.log('✅ Datos guardados en PostgreSQL:', result.rows[0]);
+        
+        res.json({
+            success: true,
+            message: '✅ Afiliación registrada exitosamente en Salud Total EPS',
+            data: result.rows[0],
+            affiliateId: result.rows[0].affiliate_id,
+            tratamientoDatos: result.rows[0].tratamiento_datos,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al guardar en PostgreSQL:', error);
+        
+        if (error.code === '23505') {
+            if (error.constraint === 'affiliates_correo_key') {
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Este correo electrónico ya está registrado'
+                });
+            }
+            if (error.constraint === 'affiliates_numero_documento_key') {
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ Este número de documento ya está registrado'
+                });
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Error al guardar en la base de datos: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA ELIMINAR UN AFILIADO
+app.delete('/api/afiliados/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('🗑️ Eliminando afiliado ID: ' + id);
+        
+        const result = await pool.query(
+            'DELETE FROM affiliates WHERE affiliate_id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '❌ Afiliado no encontrado'
+            });
+        }
+
+        console.log('✅ Afiliado eliminado:', result.rows[0]);
+        
+        res.json({
+            success: true,
+            message: '✅ Afiliado eliminado exitosamente',
+            data: result.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al eliminar afiliado:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar afiliado: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA PARA DESCARGAR DATOS EN EXCEL
+app.get('/admin/descargar-excel', requireAuth, async (req, res) => {
+    try {
+        await createTableIfNotExists();
+        
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No hay datos para exportar'
+            });
+        }
+
+        const XLSX = require('xlsx');
+
+        const excelData = result.rows.map(afiliado => ({
+            'ID Afiliado': afiliado.affiliate_id,
+            'Nombre': afiliado.nombre,
+            'Apellido': afiliado.apellido,
+            'Edad': afiliado.edad,
+            'Tipo Documento': afiliado.tipo_documento,
+            'Número Documento': afiliado.numero_documento,
+            'Fecha Nacimiento': new Date(afiliado.fecha_nacimiento).toLocaleDateString('es-CO'),
+            'Lugar Nacimiento': afiliado.lugar_nacimiento,
+            'Correo Electrónico': afiliado.correo,
+            'Tratamiento Datos Autorizado': afiliado.tratamiento_datos ? 'SÍ' : 'NO',
+            'Fecha Registro': new Date(afiliado.created_at).toLocaleString('es-CO'),
+            'Estado': 'Activo'
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        XLSX.utils.book_append_sheet(wb, ws, 'Afiliados');
+
+        const fileName = 'afiliados_salud_total_' + new Date().toISOString().split('T')[0] + '.xlsx';
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="' + fileName + '"');
+
+        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.send(buffer);
+
+        console.log('✅ Archivo Excel descargado: ' + fileName + ' con ' + result.rows.length + ' registros');
+
+    } catch (error) {
+        console.error('❌ Error al generar Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al generar archivo Excel: ' + error.message
+        });
+    }
+});
+
+// ✅ RUTA DEL PANEL DE ADMINISTRACIÓN
+app.get('/admin/afiliados', requireAuth, async (req, res) => {
+    try {
+        await createTableIfNotExists();
+        
+        const result = await pool.query('SELECT * FROM affiliates ORDER BY created_at DESC');
+        
+        let html = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Panel de Administración - Salud Total EPS</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <style>
+                :root {
+                    --primary-blue: #0055A4;
+                    --primary-green: #00A859;
+                    --primary-gold: #d4af37;
+                    --primary-dark: #1a1a1a;
+                    --light-bg: #f8fafc;
+                    --white: #ffffff;
+                    --gray-light: #f1f5f9;
+                    --gray: #64748b;
+                    --dark: #1e293b;
+                    --border-radius: 16px;
+                    --border-radius-lg: 24px;
+                    --shadow: 0 8px 30px rgba(0, 85, 164, 0.08);
+                    --shadow-lg: 0 20px 40px rgba(0, 85, 164, 0.12);
+                    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+                }
+
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: 'Inter', sans-serif;
+                }
+                
+                body {
+                    background: linear-gradient(135deg, var(--light-bg) 0%, #e0f2fe 100%);
+                    min-height: 100vh;
+                    padding: 0;
+                    color: var(--dark);
+                }
+
+                .admin-container {
+                    max-width: 1400px;
+                    margin: 140px auto 0;
+                    padding: 2rem;
+                }
+                
+                .session-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 1.5rem;
+                    font-size: 0.9rem;
+                    margin-bottom: 2rem;
+                    padding: 1rem;
+                    background: var(--white);
+                    border-radius: var(--border-radius);
+                    box-shadow: var(--shadow);
+                }
+                
+                .logout-btn {
+                    background: #dc2626;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 1.2rem;
+                    border-radius: var(--border-radius);
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    transition: var(--transition);
+                    font-weight: 600;
+                }
+                
+                .logout-btn:hover {
+                    background: #b91c1c;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+                }
+                
+                .security-badge {
+                    background: #f0f7ff;
+                    color: var(--primary-blue);
+                    padding: 0.8rem 1.2rem;
+                    border-radius: var(--border-radius);
+                    font-size: 0.8rem;
+                    border: 1px solid #bfdbfe;
+                    font-weight: 600;
+                }
+
+                .admin-header {
+                    background: var(--gradient-primary);
+                    color: white;
+                    padding: 3rem 2rem;
+                    text-align: center;
+                    border-radius: var(--border-radius-lg);
+                    margin-bottom: 2rem;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .admin-header h1 {
+                    font-size: 2.5rem;
+                    margin-bottom: 1rem;
+                    position: relative;
+                }
+                
+                .admin-header p {
+                    opacity: 0.9;
+                    font-size: 1.1rem;
+                    position: relative;
+                }
+                
+                .partner-notice {
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 1rem;
+                    border-radius: var(--border-radius);
+                    margin-top: 1rem;
+                    font-size: 0.9rem;
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                }
+                
+                .stats-container {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                    padding: 2rem;
+                    background: var(--white);
+                    border-radius: var(--border-radius-lg);
+                    box-shadow: var(--shadow);
+                    margin-bottom: 2rem;
+                }
+                
+                .stat-card {
+                    background: linear-gradient(135deg, var(--white) 0%, var(--light-bg) 100%);
+                    padding: 2rem;
+                    border-radius: var(--border-radius);
+                    text-align: center;
+                    box-shadow: var(--shadow);
+                    border-left: 4px solid var(--primary-blue);
+                    transition: var(--transition);
+                    cursor: pointer;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .stat-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: var(--shadow-lg);
+                }
+                
+                .stat-card.excel {
+                    background: var(--gradient-primary);
+                    color: white;
+                    border-left: 4px solid var(--primary-green);
+                }
+                
+                .stat-number {
+                    font-size: 2.5rem;
+                    font-weight: bold;
+                    color: var(--primary-blue);
+                    margin-bottom: 0.5rem;
+                }
+                
+                .stat-card.excel .stat-number {
+                    color: white;
+                }
+                
+                .stat-label {
+                    color: var(--gray);
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    font-weight: 600;
+                }
+                
+                .stat-card.excel .stat-label {
+                    color: rgba(255, 255, 255, 0.9);
+                }
+                
+                .data-table {
+                    padding: 0 0 2rem 0;
+                    overflow-x: auto;
+                }
+                
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    background: white;
+                    border-radius: var(--border-radius);
+                    overflow: hidden;
+                    box-shadow: var(--shadow);
+                    min-width: 1000px;
+                }
+                
+                th {
+                    background: var(--primary-blue);
+                    color: white;
+                    padding: 1.2rem;
+                    text-align: left;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                }
+                
+                td {
+                    padding: 1rem 1.2rem;
+                    border-bottom: 1px solid #e2e8f0;
+                    font-size: 0.85rem;
+                    transition: var(--transition);
+                }
+                
+                tr:hover {
+                    background: var(--light-bg);
+                    transform: scale(1.01);
+                }
+                
+                .badge {
+                    padding: 0.4rem 0.8rem;
+                    border-radius: 20px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    display: inline-block;
+                }
+                
+                .badge-success {
+                    background: #dcfce7;
+                    color: #166534;
+                }
+                
+                .badge-warning {
+                    background: #fef3c7;
+                    color: #92400E;
+                }
+                
+                .action-buttons {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                
+                .btn {
+                    padding: 0.5rem 1rem;
+                    border: none;
+                    border-radius: var(--border-radius);
+                    cursor: pointer;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    transition: var(--transition);
+                    display: flex;
+                    align-items: center;
+                    gap: 0.3rem;
+                }
+                
+                .btn-delete {
+                    background: #ef4444;
+                    color: white;
+                }
+                
+                .btn-delete:hover {
+                    background: #dc2626;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                }
+                
+                .empty-state {
+                    text-align: center;
+                    padding: 4rem 2rem;
+                    color: var(--gray);
+                }
+                
+                .empty-state i {
+                    font-size: 3rem;
+                    margin-bottom: 1rem;
+                    color: var(--primary-blue);
+                }
+                
+                .download-section {
+                    text-align: center;
+                    padding: 2rem;
+                    background: var(--white);
+                    border-radius: var(--border-radius-lg);
+                    box-shadow: var(--shadow);
+                    margin-top: 2rem;
+                }
+                
+                .download-btn {
+                    background: var(--gradient-primary);
+                    color: white;
+                    border: none;
+                    padding: 1.2rem 2.5rem;
+                    border-radius: var(--border-radius);
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    transition: var(--transition);
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    text-decoration: none;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .download-btn:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 12px 30px rgba(0, 85, 164, 0.4);
+                }
+                
+                .download-info {
+                    margin-top: 1rem;
+                    color: var(--gray);
+                    font-size: 0.9rem;
+                }
+                
+                .notification {
+                    position: fixed;
+                    top: 2rem;
+                    right: 2rem;
+                    padding: 1.2rem 1.5rem;
+                    border-radius: var(--border-radius);
+                    color: white;
+                    font-weight: 600;
+                    z-index: 1001;
+                    box-shadow: var(--shadow-lg);
+                }
+                
+                .notification.success {
+                    background: var(--primary-green);
+                }
+                
+                .notification.error {
+                    background: #dc2626;
+                }
+                
+                @media (max-width: 768px) {
+                    .admin-container {
+                        margin-top: 180px;
+                        padding: 1rem;
+                    }
+                    
+                    .stats-container {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .download-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    
+                    .session-info {
+                        flex-direction: column;
+                        gap: 1rem;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div id="notification" class="notification" style="display: none;"></div>
+
+            ${generateHeader('Panel de Administración')}
+
+            <div class="admin-container">
+                <div class="session-info">
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        Sesión activa: ${req.session.user.username}
+                    </div>
+                    <div>Conectado desde: ${new Date(req.session.user.loginTime).toLocaleString('es-CO')}</div>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Cerrar Sesión
+                    </button>
+                </div>
+                
+                <div class="admin-header">
+                    <h1>🏥 Panel de Administración</h1>
+                    <p>Salud Total EPS - Sistema de Afiliaciones</p>
+                    <div class="partner-notice">
+                        <i class="fas fa-handshake"></i>
+                        Aliado estratégico: <strong>Andreima Seguros</strong>
+                    </div>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">${result.rows.length}</div>
+                        <div class="stat-label">Total Afiliados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${result.rows.filter(a => a.tratamiento_datos).length}</div>
+                        <div class="stat-label">Tratamiento Autorizado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${new Date().getFullYear()}</div>
+                        <div class="stat-label">Año Actual</div>
+                    </div>
+                    <div class="stat-card excel" onclick="window.location.href='/admin/descargar-excel'">
+                        <div class="stat-number"><i class="fas fa-file-excel"></i></div>
+                        <div class="stat-label">Descargar Excel</div>
+                    </div>
+                </div>`;
+        
+        if (result.rows.length === 0) {
+            html += `
+                    <div class="empty-state">
+                        <i class="fas fa-database"></i>
+                        <h2>No hay afiliados registrados</h2>
+                        <p>Los datos aparecerán aquí cuando los usuarios se afilien</p>
+                        <p style="margin-top: 20px; font-size: 0.9rem; color: var(--primary-blue);">
+                            <i class="fas fa-info-circle"></i>
+                            ¡El sistema está listo! Los afiliados aparecerán aquí.
+                        </p>
+                    </div>`;
+        } else {
+            html += `
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Afiliado</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Documento</th>
+                                    <th>Email</th>
+                                    <th>Edad</th>
+                                    <th>Tratamiento Datos</th>
+                                    <th>Lugar Nacimiento</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+            
+            result.rows.forEach(afiliado => {
+                html += `
+                                <tr>
+                                    <td><strong>${afiliado.affiliate_id}</strong></td>
+                                    <td>${afiliado.nombre} ${afiliado.apellido}</td>
+                                    <td>${afiliado.tipo_documento}: ${afiliado.numero_documento}</td>
+                                    <td>${afiliado.correo}</td>
+                                    <td>${afiliado.edad} años</td>
+                                    <td>
+                                        <span class="badge ${afiliado.tratamiento_datos ? 'badge-success' : 'badge-warning'}">
+                                            ${afiliado.tratamiento_datos ? 'AUTORIZADO' : 'NO AUTORIZADO'}
+                                        </span>
+                                    </td>
+                                    <td>${afiliado.lugar_nacimiento}</td>
+                                    <td>${new Date(afiliado.created_at).toLocaleString('es-CO')}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-delete" onclick="deleteAffiliate('${afiliado.affiliate_id}', '${afiliado.nombre} ${afiliado.apellido}')">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>`;
+            });
+            
+            html += `
+                            </tbody>
+                        </table>
+                    </div>`;
+        }
+        
+        html += `
+                </div>
+                
+                <div class="download-section">
+                    <a href="/admin/descargar-excel" class="download-btn">
+                        <i class="fas fa-file-excel"></i>
+                        DESCARGAR REPORTE COMPLETO EN EXCEL
+                    </a>
+                    <div class="download-info">
+                        ${result.rows.length} registros disponibles | 
+                        Tratamiento de datos autorizado: ${result.rows.filter(a => a.tratamiento_datos).length} afiliados
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                function showNotification(message, type) {
+                    const notification = document.getElementById('notification');
+                    notification.textContent = message;
+                    notification.className = 'notification ' + type;
+                    notification.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 4000);
+                }
+                
+                async function deleteAffiliate(affiliateId, fullName) {
+                    if (confirm('¿Estás seguro de que deseas eliminar al afiliado: ' + fullName + '?\\\\n\\\\nEsta acción no se puede deshacer.')) {
+                        try {
+                            const response = await fetch('/api/afiliados/' + affiliateId, {
+                                method: 'DELETE'
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                showNotification('✅ ' + result.message, 'success');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            showNotification('❌ ' + error.message, 'error');
+                        }
+                    }
+                }
+                
+                async function logout() {
+                    try {
+                        const response = await fetch('/admin/auth/logout', {
+                            method: 'POST'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            window.location.href = '/admin/login';
+                        } else {
+                            alert('Error al cerrar sesión');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error de conexión');
+                    }
+                }
+                
+                document.querySelector('.stat-card.excel').addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            </script>
+        </body>
+        </html>`;
+        
+        res.send(html);
+        
+    } catch (error) {
+        console.error('❌ Error en panel admin:', error);
+        res.status(500).send('Error al cargar los datos: ' + error.message);
+    }
+});
+
+// ✅ HEALTH CHECK
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
@@ -1068,7 +2145,7 @@ app.get('/api/health', (req, res) => {
         version: '2.0.1',
         status: 'operational',
         partnership: {
-            aseguradora: 'Andreima Seguros', // CORREGIDO
+            aseguradora: 'Andreima Seguros',
             eps: 'Salud Total EPS'
         },
         features: {
@@ -1080,7 +2157,7 @@ app.get('/api/health', (req, res) => {
             loginSystem: true,
             diseñoMejorado: true,
             animaciones: true,
-            headerFijo: true // NUEVA CARACTERÍSTICA
+            headerFijo: true
         }
     });
 });
@@ -1096,13 +2173,12 @@ app.listen(PORT, () => {
     console.log('📊 Panel Admin: http://localhost:' + PORT + '/admin/afiliados');
     console.log('🔍 Health Check: http://localhost:' + PORT + '/api/health');
     console.log('🛡️  SISTEMA DE AUTENTICACIÓN ACTIVADO');
-    console.log('🏢 Aliado estratégico: Andreima Seguros'); // CORREGIDO
+    console.log('🏢 Aliado estratégico: Andreima Seguros');
     console.log('📍 Header fijado en todas las páginas');
     
     createTableIfNotExists();
 });
 
-// MANTENER TUS PROCESS LISTENERS ORIGINALES
 process.on('SIGTERM', () => {
     console.log('🛑 Recibido SIGTERM. Cerrando servidor gracefully...');
     process.exit(0);
